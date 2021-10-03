@@ -115,7 +115,34 @@
       - [Test with integ profile](#test-with-integ-profile)
       - [Test with admin profile](#test-with-admin-profile)
   - [Conclusion](#conclusion)
+  - [Clean Up](#clean-up-4)
+- [IAM Roles for Service Accounts](#iam-roles-for-service-accounts)
+  - [Preparation](#preparation)
+    - [Enabling IAM Roles for Service Accounts on your Cluster](#enabling-iam-roles-for-service-accounts-on-your-cluster)
+    - [Retrieve OpenID Connect issuer URL](#retrieve-openid-connect-issuer-url)
+  - [Create an OpenID Connect Provider](#create-an-openid-connect-provider)
+    - [Create your IAM OIDC Identity Provider for your cluster](#create-your-iam-oidc-identity-provider-for-your-cluster)
+  - [Creating an IAM role for service account](#creating-an-iam-role-for-service-account)
+  - [Specifying an IAM role for Service Account](#specifying-an-iam-role-for-service-account)
+  - [Deploy Sample POD](#deploy-sample-pod)
+    - [List S3 buckets](#list-s3-buckets)
+    - [List EC2 Instances](#list-ec2-instances)
   - [Clean Up](#clean-up-5)
+- [Security Groups for PODs](#security-groups-for-pods)
+    - [Introduction](#introduction-1)
+    - [Objectives](#objectives)
+  - [Prerequisites](#prerequisites-1)
+  - [Security Group Creation](#security-group-creation)
+    - [Create and configure the security groups](#create-and-configure-the-security-groups)
+  - [RDS Creation](#rds-creation)
+    - [CNI Configuration](#cni-configuration)
+  - [SecurityGroup Policy](#securitygroup-policy)
+  - [PODs Deployment](#pods-deployment)
+    - [Kubernetes secrets](#kubernetes-secrets)
+    - [Deployments](#deployments)
+    - [Green Pod](#green-pod)
+    - [Red Pod](#red-pod)
+    - [Clean Up](#clean-up-6)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -3006,4 +3033,924 @@ rm /tmp/kubeconfig*
 # reset aws credentials and config files
 rm  ~/.aws/{config,credentials}
 aws configure set default.region ${AWS_REGION}
+```
+
+# IAM Roles for Service Accounts
+In Kubernetes version 1.12, support was added for a new `ProjectedServiceAccountToken` feature, which is an OIDC JSON web token that also contains the service account identity, and supports a configurable audience.
+
+Amazon EKS now hosts a public OIDC discovery endpoint per cluster containing the signing keys for the ProjectedServiceAccountToken JSON web tokens so external systems, like IAM, can validate and accept the Kubernetes-issued OIDC tokens.
+
+OIDC federation access allows you to assume IAM roles via the Secure Token Service (STS), enabling authentication with an OIDC provider, receiving a JSON Web Token (JWT), which in turn can be used to assume an IAM role. Kubernetes, on the other hand, can issue so-called projected service account tokens, which happen to be valid OIDC JWTs for pods. Our setup equips each pod with a cryptographically-signed token that can be verified by STS against the OIDC provider of your choice to establish the pod’s identity.
+
+New credential provider ”sts:AssumeRoleWithWebIdentity”
+
+## Preparation
+### Enabling IAM Roles for Service Accounts on your Cluster
+The IAM roles for service accounts feature is available on new Amazon EKS Kubernetes version 1.16 or higher, and clusters that were updated to versions 1.14 or 1.13 on or after September 3rd, 2019.
+
+__If your EKS cluster version is older than 1.16 your outputs may very. Please consider reading the [updating an Amazon EKS Cluster](https://docs.aws.amazon.com/eks/latest/userguide/update-cluster.html) section in the User Guide.__
+```
+kubectl version --short
+```
+
+Output:
+
+```
+Client Version: v1.20.4-eks-6b7464
+Server Version: v1.20.4-eks-6b7464
+```
+
+__If your aws cli version is lower than 1.19.122, use [Installing the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) in the User Guide__
+
+```
+aws --version
+```
+
+Output:
+
+```
+aws-cli/1.19.112 Python/2.7.18 Linux/4.14.232-177.418.amzn2.x86_64 botocore/1.20.112
+```
+### Retrieve OpenID Connect issuer URL
+Your EKS cluster has an OpenID Connect issuer URL associated with it, and this will be used when configuring the IAM OIDC Provider. You can check it with:
+
+aws eks describe-cluster --name eksworkshop-eksctl --query cluster.identity.oidc.issuer --output text
+Output:
+
+
+https://oidc.eks.us-east-1.amazonaws.com/id/09D1E682ADD23F8431B986E4B2E35BCB
+
+
+## Create an OpenID Connect Provider
+To use IAM roles for service accounts in your cluster, you must create an IAM OIDC Identity Provider. This can be done using the AWS Console, AWS CLIs and eksctl. For the sake of this workshop, we will use the last.
+
+Check your eksctl version that your eksctl version is at least 0.57.0
+```
+eksctl version
+
+0.57.0
+```
+
+### Create your IAM OIDC Identity Provider for your cluster
+```
+eksctl utils associate-iam-oidc-provider --cluster eksworkshop-eksctl --approve
+```
+```
+2021-07-20 17:51:36 [ℹ]  eksctl version 0.57.0
+2021-07-20 17:51:36 [ℹ]  using region us-east-1
+2021-07-20 17:51:38 [ℹ]  will create IAM Open ID Connect provider for cluster "eksworkshop-eksctl" in "us-east-1"
+2021-07-20 17:51:39 [✔]  created IAM Open ID Connect provider for cluster "eksworkshop-eksctl" in "us-east-1"
+```
+
+If you go to the Identity Providers in IAM Console, you will see OIDC provider has created for your cluster
+![OIDC Provider](imgs/irsa-oidc.png "Cluster Creation Workflow")
+
+## Creating an IAM role for service account
+You will create an IAM policy that specifies the permissions that you would like the containers in your pods to have.
+
+In this workshop we will use the AWS managed policy named __“AmazonS3ReadOnlyAccess”__ which allow get and list for all your S3 buckets.
+
+Let’s start by finding the ARN for the __“AmazonS3ReadOnlyAccess”__ policy
+```
+aws iam list-policies --query 'Policies[?PolicyName==`AmazonS3ReadOnlyAccess`].Arn'
+```
+Output:
+```
+"arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+```
+
+Now you will create a IAM role bound to a service account with read-only access to S3
+
+```
+eksctl create iamserviceaccount \
+    --name iam-test \
+    --namespace default \
+    --cluster eksworkshop-eksctl \
+    --attach-policy-arn arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess \
+    --approve \
+    --override-existing-serviceaccounts
+```
+
+Output:
+```
+2021-07-21 10:31:14 [ℹ]  eksctl version 0.57.0
+2021-07-21 10:31:14 [ℹ]  using region us-east-1
+2021-07-21 10:31:17 [ℹ]  1 iamserviceaccount (default/iam-test) was included (based on the include/exclude rules)
+2021-07-21 10:31:17 [!]  metadata of serviceaccounts that exist in Kubernetes will be updated, as --override-existing-serviceaccounts was set
+2021-07-21 10:31:17 [ℹ]  1 task: { 2 sequential sub-tasks: { create IAM role for serviceaccount "default/iam-test", create serviceaccount "default/iam-test" } }
+2021-07-21 10:31:17 [ℹ]  building iamserviceaccount stack "eksctl-eksworkshop-eksctl-addon-iamserviceaccount-default-iam-test"
+2021-07-21 10:31:17 [ℹ]  deploying stack "eksctl-sandbox-addon-iamserviceaccount-default-iam-test"
+2021-07-21 10:31:17 [ℹ]  waiting for CloudFormation stack "eksctl-eksworkshop-eksctl-addon-iamserviceaccount-default-iam-test"
+2021-07-21 10:31:53 [ℹ]  created serviceaccount "default/iam-test"
+```
+
+__If you go to the [CloudFormation in IAM Console](https://console.aws.amazon.com/cloudformation/), you will find that the stack “eksctl-eksworkshop-eksctl-addon-iamserviceaccount-default-iam-test” has created a role for your service account.__
+
+
+## Specifying an IAM role for Service Account
+In the previous step, we created the IAM role that is associated with a service account named iam-test in the cluster.
+
+First, let’s verify your service account iam-test exists
+```
+kubectl get sa iam-test
+```
+
+```
+NAME       SECRETS   AGE
+iam-test   1         5m
+```
+
+Make sure your service account with the ARN of the IAM role is annotated
+```
+kubectl describe sa iam-test
+```
+
+```
+
+Name:                iam-test
+Namespace:           default
+Labels:              app.kubernetes.io/managed-by=eksctl
+Annotations:         eks.amazonaws.com/role-arn: arn:aws:iam::40XXXXXXXX75:role/eksctl-sandbox-addon-iamserviceaccount-defau-Role1-1B37L4A1UEXYS
+Image pull secrets:  <none>
+Mountable secrets:   iam-test-token-zbk55
+Tokens:              iam-test-token-zbk55
+Events:              <none>
+```
+
+## Deploy Sample POD
+Now that we have completed all the necessary configuration, we will run two kubernetes [jobs](https://kubernetes.io/docs/concepts/workloads/controllers/job/) with the newly created IAM role:
+
+- job-s3.yaml: that will output the result of the command aws s3 ls (this job should be successful).
+- job-ec2.yaml: that will output the result of the command aws ec2 describe-instances --region ${AWS_REGION} (this job should failed).
+
+Before deploying the workloads, make sure to have the environment variables `AWS_REGION` and `ACCOUNT_ID` configured in your terminal prompt.
+
+### List S3 buckets
+
+Let’s start by testing if the service account can list the S3 buckets
+```
+mkdir ~/environment/irsa
+
+cat <<EoF> ~/environment/irsa/job-s3.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eks-iam-test-s3
+spec:
+  template:
+    metadata:
+      labels:
+        app: eks-iam-test-s3
+    spec:
+      serviceAccountName: iam-test
+      containers:
+      - name: eks-iam-test
+        image: amazon/aws-cli:latest
+        args: ["s3", "ls"]
+      restartPolicy: Never
+EoF
+
+kubectl apply -f ~/environment/irsa/job-s3.yaml
+```
+
+Make sure your job is completed.
+```
+kubectl get job -l app=eks-iam-test-s3
+```
+
+Output:
+
+```
+NAME              COMPLETIONS   DURATION   AGE
+eks-iam-test-s3   1/1           2s         21m
+```
+
+Let’s check the logs to verify that the command ran successfully.
+```
+kubectl logs -l app=eks-iam-test-s3
+```
+
+Output:
+
+```
+2021-07-17 20:09:41 eksworkshop-eksctl-helm-charts
+2021-07-18 19:22:37 eksworkshop-logs
+```
+
+__If the output lists some buckets, please move on to List EC2 Instances. If not, it is possible your account doesn’t have any s3 buckets. Please try to run theses extra commands.__
+
+Let’s create an S3 bucket.
+```
+aws s3 mb s3://eksworkshop-$ACCOUNT_ID-$AWS_REGION --region $AWS_REGION
+```
+
+Output:
+
+```
+make_bucket: eksworkshop-40XXXXXXXX75-us-east-1
+```
+
+Now, let’s try that job again. But first, we should remove the old job.
+
+```
+kubectl delete job -l app=eks-iam-test-s3
+```
+
+Then we can re-create the job.
+```
+kubectl apply -f ~/environment/irsa/job-s3.yaml
+```
+
+Finally, we can have a look at the output.
+```
+kubectl logs -l app=eks-iam-test-s3
+```
+
+Output:
+
+```
+2021-07-21 14:06:24 eksworkshop-40XXXXXXXX75-us-east-1
+```
+
+### List EC2 Instances
+
+Now Let’s confirm that the service account cannot list the EC2 instances
+```
+cat <<EoF> ~/environment/irsa/job-ec2.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: eks-iam-test-ec2
+spec:
+  template:
+    metadata:
+      labels:
+        app: eks-iam-test-ec2
+    spec:
+      serviceAccountName: iam-test
+      containers:
+      - name: eks-iam-test
+        image: amazon/aws-cli:latest
+        args: ["ec2", "describe-instances", "--region", "${AWS_REGION}"]
+      restartPolicy: Never
+  backoffLimit: 0
+EoF
+
+kubectl apply -f ~/environment/irsa/job-ec2.yaml
+```
+
+Let’s verify the job status
+```
+kubectl get job -l app=eks-iam-test-ec2
+```
+
+Output:
+
+```
+NAME               COMPLETIONS   DURATION   AGE
+eks-iam-test-ec2   0/1           39s        39s
+```
+
+It is normal that the job didn’t complete successfuly.
+
+Finally we will review the logs
+```
+kubectl logs -l app=eks-iam-test-ec2
+```
+
+Output:
+
+```
+An error occurred (UnauthorizedOperation) when calling the DescribeInstances operation: You are not authorized to perform this operation.
+```
+
+## Clean Up
+To cleanup, follow these steps.
+```
+kubectl delete -f ~/environment/irsa/job-s3.yaml
+kubectl delete -f ~/environment/irsa/job-ec2.yaml
+
+eksctl delete iamserviceaccount \
+    --name iam-test \
+    --namespace default \
+    --cluster eksworkshop-eksctl \
+    --wait
+
+rm -rf ~/environment/irsa/
+
+aws s3 rb s3://eksworkshop-$ACCOUNT_ID-$AWS_REGION --region $AWS_REGION --force
+```
+
+# Security Groups for PODs
+### Introduction
+Containerized applications frequently require access to other services running within the cluster as well as external AWS services, such as Amazon Relational Database Service (Amazon RDS).
+
+On AWS, controlling network level access between services is often accomplished via security groups.
+
+Before the release of this new functionality, you could only assign security groups at the node level. And because all nodes inside a Node group share the security group, by attaching the security group to access the RDS instance to the Node group, all the pods running on theses nodes would have access the database even if only the green pod should have access.
+
+![SG Per POD](imgs/sg-per-pod_1.png "Cluster Creation Workflow")
+
+Security groups for pods integrate Amazon EC2 security groups with Kubernetes pods. You can use Amazon EC2 security groups to define rules that allow inbound and outbound network traffic to and from pods that you deploy to nodes running on many Amazon EC2 instance types. For a detailed explanation of this capability, see the Introducing security groups for pods blog post and the official documentation.
+
+### Objectives
+During this section of the workshop:
+
+- We will create an Amazon RDS database protected by a security group called RDS_SG.
+- We will create a security group called POD_SG that will be allowed to connect to the RDS instance.
+- Then we will deploy a SecurityGroupPolicy that will automatically attach the POD_SG security group to a pod with the correct metadata.
+- Finally we will deploy two pods (green and red) using the same image and verify that only one of them (green) can connect to the Amazon RDS database.
+
+
+![SG Per POD](imgs/sg-per-pod_3.png "Cluster Creation Workflow")
+
+## Prerequisites
+__Security groups for pods are supported by most Nitro-based Amazon EC2 instance families, including the m5, c5, r5, p3, m6g, c6g, and r6g instance families. The t3 instance family is not supported and so we will create a second NodeGroup using one m5.large instance.__
+```
+
+mkdir ${HOME}/environment/sg-per-pod
+
+cat << EoF > ${HOME}/environment/sg-per-pod/nodegroup-sec-group.yaml
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: eksworkshop-eksctl
+  region: ${AWS_REGION}
+
+managedNodeGroups:
+- name: nodegroup-sec-group
+  desiredCapacity: 1
+  instanceType: m5.large
+EoF
+```
+
+```
+eksctl create nodegroup -f ${HOME}/environment/sg-per-pod/nodegroup-sec-group.yaml
+```
+
+```
+kubectl get nodes \
+  --selector node.kubernetes.io/instance-type=m5.large
+
+NAME                                           STATUS   ROLES    AGE     VERSION
+ip-192-168-34-45.us-east-2.compute.internal    Ready    <none>   4m57s   v1.17.12-eks-7684af
+```
+
+## Security Group Creation
+### Create and configure the security groups
+First, let’s create the RDS security group (RDS_SG). It will be used by the Amazon RDS instance to control network access.
+```
+export VPC_ID=$(aws eks describe-cluster \
+    --name eksworkshop-eksctl \
+    --query "cluster.resourcesVpcConfig.vpcId" \
+    --output text)
+
+# create RDS security group
+aws ec2 create-security-group \
+    --description 'RDS SG' \
+    --group-name 'RDS_SG' \
+    --vpc-id ${VPC_ID}
+
+# save the security group ID for future use
+export RDS_SG=$(aws ec2 describe-security-groups \
+    --filters Name=group-name,Values=RDS_SG Name=vpc-id,Values=${VPC_ID} \
+    --query "SecurityGroups[0].GroupId" --output text)
+
+echo "RDS security group ID: ${RDS_SG}"
+```
+
+Now, let’s create the pod security group (POD_SG).
+
+```
+# create the POD security group
+aws ec2 create-security-group \
+    --description 'POD SG' \
+    --group-name 'POD_SG' \
+    --vpc-id ${VPC_ID}
+
+# save the security group ID for future use
+export POD_SG=$(aws ec2 describe-security-groups \
+    --filters Name=group-name,Values=POD_SG Name=vpc-id,Values=${VPC_ID} \
+    --query "SecurityGroups[0].GroupId" --output text)
+
+echo "POD security group ID: ${POD_SG}"
+```
+
+The pod needs to communicate with its node for DNS resolution, so we will update the Node Group security group accordingly.
+
+```
+export NODE_GROUP_SG=$(aws ec2 describe-security-groups \
+    --filters Name=tag:Name,Values=eks-cluster-sg-eksworkshop-eksctl-* Name=vpc-id,Values=${VPC_ID} \
+    --query "SecurityGroups[0].GroupId" \
+    --output text)
+echo "Node Group security group ID: ${NODE_GROUP_SG}"
+
+# allow POD_SG to connect to NODE_GROUP_SG using TCP 53
+aws ec2 authorize-security-group-ingress \
+    --group-id ${NODE_GROUP_SG} \
+    --protocol tcp \
+    --port 53 \
+    --source-group ${POD_SG}
+
+# allow POD_SG to connect to NODE_GROUP_SG using UDP 53
+aws ec2 authorize-security-group-ingress \
+    --group-id ${NODE_GROUP_SG} \
+    --protocol udp \
+    --port 53 \
+    --source-group ${POD_SG}
+```
+
+Finally, we will add two inbound traffic (ingress) rules to the RDS_SG security group:
+
+- One for Cloud9 (to populate the database).
+- One to allow POD_SG security group to connect to the database.
+
+```
+# Cloud9 IP
+export C9_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+
+# allow Cloud9 to connect to RDS
+aws ec2 authorize-security-group-ingress \
+    --group-id ${RDS_SG} \
+    --protocol tcp \
+    --port 5432 \
+    --cidr ${C9_IP}/32
+
+# Allow POD_SG to connect to the RDS
+aws ec2 authorize-security-group-ingress \
+    --group-id ${RDS_SG} \
+    --protocol tcp \
+    --port 5432 \
+    --source-group ${POD_SG}
+
+```
+
+## RDS Creation
+Now that our security groups are ready let’s create our Amazon RDS for PostgreSQL database.
+
+We first need to create a [DB subnet groups](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_VPC.WorkingWithRDSInstanceinaVPC.html#USER_VPC.Subnets). We will use the same subnets as our EKS cluster.
+```
+export PUBLIC_SUBNETS_ID=$(aws ec2 describe-subnets \
+    --filters "Name=vpc-id,Values=$VPC_ID" "Name=tag:Name,Values=eksctl-eksworkshop-eksctl-cluster/SubnetPublic*" \
+    --query 'Subnets[*].SubnetId' \
+    --output json | jq -c .)
+
+# create a db subnet group
+aws rds create-db-subnet-group \
+    --db-subnet-group-name rds-eksworkshop \
+    --db-subnet-group-description rds-eksworkshop \
+    --subnet-ids ${PUBLIC_SUBNETS_ID}
+```
+
+We can now create our database.
+
+```
+# get RDS SG ID
+export RDS_SG=$(aws ec2 describe-security-groups \
+    --filters Name=group-name,Values=RDS_SG Name=vpc-id,Values=${VPC_ID} \
+    --query "SecurityGroups[0].GroupId" --output text)
+
+# generate a password for RDS
+export RDS_PASSWORD="$(date | md5sum  |cut -f1 -d' ')"
+echo ${RDS_PASSWORD}  > ~/environment/sg-per-pod/rds_password
+
+
+# create RDS Postgresql instance
+aws rds create-db-instance \
+    --db-instance-identifier rds-eksworkshop \
+    --db-name eksworkshop \
+    --db-instance-class db.t3.micro \
+    --engine postgres \
+    --db-subnet-group-name rds-eksworkshop \
+    --vpc-security-group-ids $RDS_SG \
+    --master-username eksworkshop \
+    --publicly-accessible \
+    --master-user-password ${RDS_PASSWORD} \
+    --backup-retention-period 0 \
+    --allocated-storage 20
+
+```
+
+__It will take up to 4 minutes for the database to be created.__
+
+You can verify if it’s available using this command.
+```
+aws rds describe-db-instances \
+    --db-instance-identifier rds-eksworkshop \
+    --query "DBInstances[].DBInstanceStatus" \
+    --output text
+```
+
+Expected output
+
+```
+available
+```
+
+Now that the database is available, let’s get our database Endpoint.
+```
+# get RDS endpoint
+export RDS_ENDPOINT=$(aws rds describe-db-instances \
+    --db-instance-identifier rds-eksworkshop \
+    --query 'DBInstances[0].Endpoint.Address' \
+    --output text)
+
+echo "RDS endpoint: ${RDS_ENDPOINT}"
+```
+
+Our last step is to create some content in the database.
+```
+sudo amazon-linux-extras install -y postgresql12
+
+cd sg-per-pod
+
+cat << EoF > ~/environment/sg-per-pod/pgsql.sql
+CREATE TABLE welcome (column1 TEXT);
+insert into welcome values ('--------------------------');
+insert into welcome values ('Welcome to the EKS Training');
+insert into welcome values ('--------------------------');
+EoF
+
+export RDS_PASSWORD=$(cat ~/environment/sg-per-pod/rds_password)
+
+psql postgresql://eksworkshop:${RDS_PASSWORD}@${RDS_ENDPOINT}:5432/eksworkshop \
+    -f ~/environment/sg-per-pod/pgsql.sql
+```
+
+### CNI Configuration
+To enable this new functionality, Amazon EKS clusters have two new components running on the Kubernetes control plane:
+
+- A mutating webhook responsible for adding limits and requests to pods requiring security groups.
+- A resource controller responsible for managing [network interfaces](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-eni.html) associated with those pods.
+To facilitate this feature, each worker node will be associated with a single trunk network interface, and multiple branch network interfaces. The trunk interface acts as a standard network interface attached to the instance. The VPC resource controller then associates branch interfaces to the trunk interface. This increases the number of network interfaces that can be attached per instance. Since security groups are specified with network interfaces, we are now able to schedule pods requiring specific security groups onto these additional network interfaces allocated to worker nodes.
+
+First we need to attach a new IAM policy the Node group role to allow the EC2 instances to manage network interfaces, their private IP addresses, and their attachment and detachment to and from instances.
+
+The following command adds the policy `AmazonEKSVPCResourceController` to a cluster role.
+```
+aws iam attach-role-policy \
+    --policy-arn arn:aws:iam::aws:policy/AmazonEKSVPCResourceController \
+    --role-name ${ROLE_NAME}
+```
+
+Next, we will enable the CNI plugin to manage network interfaces for pods by setting the ENABLE_POD_ENI variable to true in the aws-node DaemonSet.
+```
+kubectl -n kube-system set env daemonset aws-node ENABLE_POD_ENI=true
+
+
+# let's way for the rolling update of the daemonset
+kubectl -n kube-system rollout status ds aws-node
+```
+
+Once this setting is set to true, for each node in the cluster the plugin adds a label with the value vpc.amazonaws.com/has-trunk-attached=true to the compatible instances. The VPC resource controller creates and attaches one special network interface called a trunk network interface with the description aws-k8s-trunk-eni.
+```
+ kubectl get nodes \
+  --selector  eks.amazonaws.com/nodegroup=nodegroup-sec-group \
+  --show-labels
+```
+
+![CNI Configuration](imgs/sg-per-pod_4.png "Cluster Creation Workflow")
+
+## SecurityGroup Policy
+A new Custom Resource Definition (CRD) has also been added automatically at the cluster creation. Cluster administrators can specify which security groups to assign to pods through the SecurityGroupPolicy CRD. Within a namespace, you can select pods based on pod labels, or based on labels of the service account associated with a pod. For any matching pods, you also define the security group IDs to be applied.
+
+You can verify the CRD is present with this command.
+```
+kubectl get crd securitygrouppolicies.vpcresources.k8s.aws
+```
+
+Output
+
+```
+securitygrouppolicies.vpcresources.k8s.aws   2020-11-04T17:01:27Z
+```
+
+The webhook watches SecurityGroupPolicy custom resources for any changes, and automatically injects matching pods with the extended resource request required for the pod to be scheduled onto a node with available branch network interface capacity. Once the pod is scheduled, the resource controller will create and attach a branch interface to the trunk interface. Upon successful attachment, the controller adds an annotation to the pod object with the branch interface details.
+
+Now let’s create our policy.
+```
+cat << EoF > ~/environment/sg-per-pod/sg-policy.yaml
+apiVersion: vpcresources.k8s.aws/v1beta1
+kind: SecurityGroupPolicy
+metadata:
+  name: allow-rds-access
+spec:
+  podSelector:
+    matchLabels:
+      app: green-pod
+  securityGroups:
+    groupIds:
+      - ${POD_SG}
+EoF
+```
+
+As we can see, if the pod has the label app: green-pod, a security group will be attached to it.
+
+We can finally deploy it in a specific namespace.
+```
+kubectl create namespace sg-per-pod
+
+kubectl -n sg-per-pod apply -f ~/environment/sg-per-pod/sg-policy.yaml
+```
+
+```
+kubectl -n sg-per-pod describe securitygrouppolicy
+```
+
+Output
+
+```
+Name:         allow-rds-access
+Namespace:    sg-per-pod
+Labels:       <none>
+Annotations:  kubectl.kubernetes.io/last-applied-configuration:
+                {"apiVersion":"vpcresources.k8s.aws/v1beta1","kind":"SecurityGroupPolicy","metadata":{"annotations":{},"name":"allow-rds-access","namespac...
+API Version:  vpcresources.k8s.aws/v1beta1
+Kind:         SecurityGroupPolicy
+Metadata:
+  Creation Timestamp:  2020-12-03T04:35:57Z
+  Generation:          1
+  Resource Version:    9142629
+  Self Link:           /apis/vpcresources.k8s.aws/v1beta1/namespaces/sg-per-pod/securitygrouppolicies/allow-rds-access
+  UID:                 bf1e329d-816e-4ab0-abe8-934cadabfdd3
+Spec:
+  Pod Selector:
+    Match Labels:
+      App:  green-pod
+  Security Groups:
+    Group Ids:
+      sg-0ff967bc903e9639e
+Events:  <none>
+```
+
+## PODs Deployment
+### Kubernetes secrets
+Before deploying our two pods we need to provide them with the RDS endpoint and password. We will create a kubernetes secret.
+```
+export RDS_PASSWORD=$(cat ~/environment/sg-per-pod/rds_password)
+
+export RDS_ENDPOINT=$(aws rds describe-db-instances \
+    --db-instance-identifier rds-eksworkshop \
+    --query 'DBInstances[0].Endpoint.Address' \
+    --output text)
+
+kubectl create secret generic rds\
+    --namespace=sg-per-pod \
+    --from-literal="password=${RDS_PASSWORD}" \
+    --from-literal="host=${RDS_ENDPOINT}"
+
+kubectl -n sg-per-pod describe  secret rds
+```
+
+Output
+
+```
+Name:         rds
+Namespace:    sg-per-pod
+Labels:       <none>
+Annotations:  <none>
+
+Type:  Opaque
+
+Data
+====
+host:      56 bytes
+password:  32 bytes
+
+```
+
+### Deployments
+The required deployment files are in the YAMLs directory of this repository.
+
+
+Take some time to explore both YAML files and see the different between the two.
+![YAML Diff](imgs/sg-per-pod_5.png "Cluster Creation Workflow")
+
+### Green Pod
+Now let’s deploy the green pod
+```
+kubectl -n sg-per-pod apply -f ~/environment/sg-per-pod/green-pod.yaml
+
+kubectl -n sg-per-pod rollout status deployment green-pod
+```
+
+The container will try to:
+
+- Connect to the database and will output the content of a table to STDOUT.
+- If the database connection failed, the error message will also be outputted to STDOUT.
+
+Let’s verify the logs.
+```
+export GREEN_POD_NAME=$(kubectl -n sg-per-pod get pods -l app=green-pod -o jsonpath='{.items[].metadata.name}')
+
+kubectl -n sg-per-pod  logs -f ${GREEN_POD_NAME}
+```
+
+Output
+
+```
+[('--------------------------',), ('Welcome to the EKS Training',), ('--------------------------',)]
+[('--------------------------',), ('Welcome to the EKS Training',), ('--------------------------',)]
+```
+
+__use CTRL+C to exit the log__
+
+As we can see, our attempt was successful!
+
+Now let’s verify that:
+
+- An ENI is attached to the pod.
+- And the ENI has the security group POD_SG attached to it.
+We can find the ENI ID in the pod Annotations section using this command.
+```
+kubectl -n sg-per-pod  describe pod $GREEN_POD_NAME | head -11
+```
+
+Output
+
+```
+Name:         green-pod-5c786d8dff-4kmvc
+Namespace:    sg-per-pod
+Priority:     0
+Node:         ip-192-168-33-222.us-east-2.compute.internal/192.168.33.222
+Start Time:   Thu, 03 Dec 2020 05:25:54 +0000
+Labels:       app=green-pod
+              pod-template-hash=5c786d8dff
+Annotations:  kubernetes.io/psp: eks.privileged
+              vpc.amazonaws.com/pod-eni:
+                [{"eniId":"eni-0d8a3a3a7f2eb57ab","ifAddress":"06:20:0d:3c:5f:bc","privateIp":"192.168.47.64","vlanId":1,"subnetCidr":"192.168.32.0/19"}]
+Status:       Running
+```
+
+You can verify that the security group POD_SG is attached to the eni shown above by opening [this](https://console.aws.amazon.com/ec2/home?#NIC:search=POD_SG) link.
+
+![Network Interfaces](imgs/sg-per-pod_6.png "Cluster Creation Workflow")
+
+### Red Pod
+We will deploy the red pod and verify that it’s unable to connect to the database.
+
+Just like for the green pod, the container will try to:
+
+- Connect to the database and will output to STDOUT the content of a table.
+- If the database connection failed, the error message will also be outputted to STDOUT.
+```
+kubectl -n sg-per-pod apply -f ~/environment/sg-per-pod/red-pod.yaml
+
+kubectl -n sg-per-pod rollout status deployment red-pod
+```
+
+Let’s verify the logs (use CTRL+C to exit the log)
+```
+export RED_POD_NAME=$(kubectl -n sg-per-pod get pods -l app=red-pod -o jsonpath='{.items[].metadata.name}')
+
+kubectl -n sg-per-pod  logs -f ${RED_POD_NAME}
+```
+
+Output
+
+```
+Database connection failed due to timeout expired
+```
+
+Finally let’s verify that the pod doesn’t have an eniId annotation.
+```
+kubectl -n sg-per-pod  describe pod ${RED_POD_NAME} | head -11
+```
+
+Output
+
+```
+Name:         red-pod-7f68d78475-vlm77
+Namespace:    sg-per-pod
+Priority:     0
+Node:         ip-192-168-6-158.us-east-2.compute.internal/192.168.6.158
+Start Time:   Thu, 03 Dec 2020 07:08:28 +0000
+Labels:       app=red-pod
+              pod-template-hash=7f68d78475
+Annotations:  kubernetes.io/psp: eks.privileged
+Status:       Running
+IP:           192.168.0.188
+IPs:
+```
+
+Conclusion
+In this module, we configured our EKS cluster to enable the security groups per pod feature.
+
+We created a SecurityGroup Policy and deployed 2 pods (using the same docker image) and a RDS Database protected by a Security Group.
+
+Based on this policy, only one of the two pods was able to connect to the database.
+
+Finally using the CLI and the AWS console, we were able to locate the pod’s ENI and verify that the Security Group was attached to it.
+
+### Clean Up
+```
+
+export VPC_ID=$(aws eks describe-cluster \
+    --name eksworkshop-eksctl \
+    --query "cluster.resourcesVpcConfig.vpcId" \
+    --output text)
+export RDS_SG=$(aws ec2 describe-security-groups \
+    --filters Name=group-name,Values=RDS_SG Name=vpc-id,Values=${VPC_ID} \
+    --query "SecurityGroups[0].GroupId" --output text)
+export POD_SG=$(aws ec2 describe-security-groups \
+    --filters Name=group-name,Values=POD_SG Name=vpc-id,Values=${VPC_ID} \
+    --query "SecurityGroups[0].GroupId" --output text)
+export C9_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+export NODE_GROUP_SG=$(aws ec2 describe-security-groups \
+    --filters Name=tag:Name,Values=eks-cluster-sg-eksworkshop-eksctl-* Name=vpc-id,Values=${VPC_ID} \
+    --query "SecurityGroups[0].GroupId" \
+    --output text)
+
+# uninstall the RPM package
+sudo yum remove -y $(sudo yum list installed | grep amzn2extra-postgresql12 | awk '{ print $1}')
+
+# delete database
+aws rds delete-db-instance \
+    --db-instance-identifier rds-eksworkshop \
+    --delete-automated-backups \
+    --skip-final-snapshot
+
+# delete kubernetes element
+kubectl -n sg-per-pod delete -f ~/environment/sg-per-pod/green-pod.yaml
+kubectl -n sg-per-pod delete -f ~/environment/sg-per-pod/red-pod.yaml
+kubectl -n sg-per-pod delete -f ~/environment/sg-per-pod/sg-policy.yaml
+kubectl -n sg-per-pod delete secret rds
+
+# delete the namespace
+kubectl delete ns sg-per-pod
+
+# disable ENI trunking
+kubectl -n kube-system set env daemonset aws-node ENABLE_POD_ENI=false
+kubectl -n kube-system rollout status ds aws-node
+
+# detach the IAM policy
+aws iam detach-role-policy \
+    --policy-arn arn:aws:iam::aws:policy/AmazonEKSVPCResourceController \
+    --role-name ${ROLE_NAME}
+
+# remove the security groups rules
+aws ec2 revoke-security-group-ingress \
+    --group-id ${RDS_SG} \
+    --protocol tcp \
+    --port 5432 \
+    --source-group ${POD_SG}
+
+aws ec2 revoke-security-group-ingress \
+    --group-id ${RDS_SG} \
+    --protocol tcp \
+    --port 5432 \
+    --cidr ${C9_IP}/32
+
+aws ec2 revoke-security-group-ingress \
+    --group-id ${NODE_GROUP_SG} \
+    --protocol tcp \
+    --port 53 \
+    --source-group ${POD_SG}
+
+aws ec2 revoke-security-group-ingress \
+    --group-id ${NODE_GROUP_SG} \
+    --protocol udp \
+    --port 53 \
+    --source-group ${POD_SG}
+
+# delete POD security group
+aws ec2 delete-security-group \
+    --group-id ${POD_SG}
+```
+
+Verify the RDS instance has been deleted.
+```
+aws rds describe-db-instances \
+    --db-instance-identifier rds-eksworkshop \
+    --query "DBInstances[].DBInstanceStatus" \
+    --output text
+```
+
+Expected output
+
+```
+An error occurred (DBInstanceNotFound) when calling the DescribeDBInstances operation: DBInstance rds-eksworkshop not found.
+```
+
+We can now safely delete the DB security group and the DB subnet group.
+
+```
+# delete RDS SG
+aws ec2 delete-security-group \
+    --group-id ${RDS_SG}
+
+# delete DB subnet group
+aws rds delete-db-subnet-group \
+    --db-subnet-group-name rds-eksworkshop
+```
+Finally, we will delete the EKS Nodegroup
+```
+# delete the nodegroup
+eksctl delete nodegroup -f ${HOME}/environment/sg-per-pod/nodegroup-sec-group.yaml --approve
+
+# remove the trunk label
+kubectl label node  --all 'vpc.amazonaws.com/has-trunk-attached'-
+
+cd ~/environment
+rm -rf sg-per-pod
 ```
