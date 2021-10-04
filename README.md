@@ -72,7 +72,7 @@
   - [Install kube-ops-view](#install-kube-ops-view)
   - [Configure Horizontal Pod Autoscaler (HPA)](#configure-horizontal-pod-autoscaler-hpa)
     - [Deploy the Metrics Server](#deploy-the-metrics-server)
-  - [Scale and application with HPA](#scale-and-application-with-hpa)
+  - [Scale an application with HPA](#scale-an-application-with-hpa)
     - [Deploy a Sample App](#deploy-a-sample-app)
     - [Create an HPA resource](#create-an-hpa-resource)
     - [Generate load to trigger scaling](#generate-load-to-trigger-scaling)
@@ -143,6 +143,33 @@
     - [Green Pod](#green-pod)
     - [Red Pod](#red-pod)
     - [Clean Up](#clean-up-6)
+- [Securing cluster with network policies](#securing-cluster-with-network-policies)
+  - [Create network policies using Calico](#create-network-policies-using-calico)
+  - [Install Calico](#install-calico)
+  - [Stars policy demo](#stars-policy-demo)
+    - [Create Resources](#create-resources)
+      - [Stars Namespace](#stars-namespace)
+      - [Create a namespace called stars:](#create-a-namespace-called-stars)
+    - [Default Pod-to-pod communication](#default-pod-to-pod-communication)
+    - [Apply network policies](#apply-network-policies)
+    - [Allow Directional Traffic](#allow-directional-traffic)
+    - [Clean Up](#clean-up-7)
+- [Deploying Microservices to EKS Fargate](#deploying-microservices-to-eks-fargate)
+  - [Creating a fargate profile](#creating-a-fargate-profile)
+    - [Create a Fargate profile](#create-a-fargate-profile)
+  - [Setting up the LB Controller](#setting-up-the-lb-controller)
+    - [AWS Load Balancer Controller](#aws-load-balancer-controller)
+    - [Helm](#helm-1)
+    - [Create IAM OIDC provider](#create-iam-oidc-provider)
+    - [Create an IAM policy](#create-an-iam-policy)
+    - [Create a IAM role and ServiceAccount for the Load Balancer controller](#create-a-iam-role-and-serviceaccount-for-the-load-balancer-controller)
+    - [Install the TargetGroupBinding CRDs](#install-the-targetgroupbinding-crds)
+    - [Deploy the Helm chart from the Amazon EKS charts repo](#deploy-the-helm-chart-from-the-amazon-eks-charts-repo)
+  - [Deploying Pods to Fargate](#deploying-pods-to-fargate)
+    - [Deploy the sample application](#deploy-the-sample-application)
+  - [Ingress](#ingress)
+    - [Ingress](#ingress-1)
+  - [Clean Up](#clean-up-8)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -371,6 +398,13 @@ git clone https://github.com/saikiranchalla1/ecsdemo-nodejs.git
 git clone https://github.com/saikiranchalla1/ecsdemo-crystal.git
 ```
 
+Also clone the `learning-eks` repo onto the Cloud9 IDE. You'll need a Personal Access Token (__PAT__) to clone this repository. Create one in your Github [settings page](https://github.com/settings/tokens).
+
+```
+git clone https://github.com/saikiranchalla1/learning-eks
+```
+__Since this is a private repo, you'll have to provide your login credentials to Github. The password will be the PAT you created__
+
 ## Create an AWS KMS Customer Managed Key
 Create a CMK for the EKS cluster to use when encrypting your Kubernetes secrets:
 ```
@@ -563,7 +597,7 @@ Now we can access the Kubernetes Dashboard
 ```
 
 The Cloud9 Preview browser doesn’t appear to support the token authentication, so once you have the login screen in the cloud9 preview browser tab, press the Pop Out button to open the login screen in a regular browser tab, like below:
-  ![Popout](imgs/[popout].png "K8s Dashboard")
+  ![Popout](imgs/popout.png "K8s Dashboard")
 
 - Open a New Terminal Tab and enter
 ```
@@ -571,7 +605,7 @@ aws eks get-token --cluster-name eksworkshop-eksctl | jq -r '.status.token'
 ```
 
 - Copy the output of this command and then click the radio button next to Token then in the text field below paste the output from the last command.
-  ![Popout](imgs/[dashboard-connect].png "K8s Dashboard")
+  ![Popout](imgs/dashboard-connect.png "K8s Dashboard")
 
 - Then press Sign In.
 
@@ -741,7 +775,7 @@ curl -m3 -v $ELB
 
 __It will take several minutes for the ELB to become healthy and start passing traffic to the frontend pods.__
 
-You should also be able to copy/paste the loadBalancer hostname into your browser and see the application running. Keep this tab open while we scale the services up on the next page.
+You should also be able to copy/paste the loadBalancer hostname into your browser and see the application running. Keep this tab open while we scale the services up in the next module.
 
 ## Scale the Backend Services
 When we launched our services, we only launched one container of each. We can confirm this by viewing the running pods:
@@ -1645,13 +1679,13 @@ This will display a line similar to `Kube-ops-view URL = http://<URL_PREFIX_ELB>
 
 __You may need to refresh the page and clean your browser cache. The creation and setup of the LoadBalancer may take a few minutes; usually in two minutes you should see kub-ops-view.__
 
-![Kube Ops View](imgs/kube-ops-view.pmg "kube-ops-view")
+![Kube Ops View](imgs/kube-ops-view.png "kube-ops-view")
 
 As this workshop moves along and you perform scale up and down actions, you can check the effects and changes in the cluster using kube-ops-view. Check out the different components and see how they map to the concepts that we have already covered during this workshop.
 
 __Spend some time checking the state and properties of your EKS cluster.__
 
-![Kube Ops View](imgs/kube-ops-view-legend.pmg "kube-ops-view")
+![Kube Ops View](imgs/kube-ops-view-legend.png "kube-ops-view")
 
 ## Configure Horizontal Pod Autoscaler (HPA)
 ### Deploy the Metrics Server
@@ -1687,7 +1721,7 @@ kubectl get apiservice v1beta1.metrics.k8s.io -o json | jq '.status'
 
 We are now ready to scale a deployed application
 
-## Scale and application with HPA
+## Scale an application with HPA
 ### Deploy a Sample App
 We will deploy an application and expose as a service on TCP port 80.
 
@@ -3953,4 +3987,892 @@ kubectl label node  --all 'vpc.amazonaws.com/has-trunk-attached'-
 
 cd ~/environment
 rm -rf sg-per-pod
+```
+
+# Securing cluster with network policies
+In this module, we are going to use two tools to secure our cluster by using network policies and then integrating our cluster’s network policies with EKS security groups.
+
+We will use Project Calico to enforce Kubernetes network policies in our cluster, protecting our various microservices.
+
+![Project Calico](imgs/Project-Calico-logo-1000px.png "Cluster Creation Workflow")
+
+## Create network policies using Calico
+In this module, we will create some network policies using [Calico](https://www.projectcalico.org/) and see the rules in action.
+
+Network policies allow you to define rules that determine what type of traffic is allowed to flow between different services. Using network policies you can also define rules to restrict traffic. They are a means to improve your cluster’s security.
+
+For example, you can only allow traffic from frontend to backend in your application.
+
+Network policies also help in isolating traffic within namespaces. For instance, if you have separate namespaces for development and production, you can prevent traffic flow between them by restrict pod to pod communication within the same namespace.
+
+## Install Calico
+Apply the Calico manifest from the [aws/amazon-vpc-cni-k8s](https://github.com/aws/amazon-vpc-cni-k8s) GitHub project. This creates the daemon sets in the kube-system namespace.
+```
+kubectl apply -f https://raw.githubusercontent.com/aws/amazon-vpc-cni-k8s/master/config/v1.6/calico.yaml
+```
+
+Let’s go over few key features of the Calico manifest:
+
+- We see an annotation throughout; [annotations](https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/) are a way to attach `non-identifying` metadata to objects. This metadata is not used internally by Kubernetes, so they cannot be used to identify within k8s. Instead, they are used by external tools and libraries. Examples of annotations include build/release timestamps, client library information for debugging, or fields managed by a network policy like Calico in this case.
+```
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: calico-node
+  namespace: kube-system
+  labels:
+    k8s-app: calico-node
+spec:
+  selector:
+    matchLabels:
+      k8s-app: calico-node
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: calico-node
+      annotations:
+        # This, along with the CriticalAddonsOnly toleration below,
+        # marks the pod as a critical add-on, ensuring it gets
+        # priority scheduling and that its resources are reserved
+        # if it ever gets evicted.
+        *scheduler**.alpha.kubernetes.io/critical-pod: ''*
+        ...
+```
+
+In contrast, [Labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors) in Kubernetes are intended to be used to specify identifying attributes for objects. They are used by selector queries or with label selectors. Since they are used internally by Kubernetes the structure of keys and values is constrained, to optimize queries.
+
+- We see that the manifest has a tolerations attribute. [Taints and tolerations](https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/) work together to ensure pods are not scheduled onto inappropriate nodes. Taints are applied to nodes, and the only pods that can tolerate the taint are allowed to run on those nodes.
+A taint consists of a key, a value for it and an effect, which can be:
+
+- PreferNoSchedule: Prefer not to schedule intolerant pods to the tainted node
+- NoSchedule: Do not schedule intolerant pods to the tainted node
+- NoExecute: In addition to not scheduling, also evict intolerant pods that are already running on the node.
+
+Like taints, tolerations also have a key value pair and an effect, with the addition of operator. Here in the Calico manifest, we see tolerations has just one attribute: Operator = exists. This means the key value pair is omitted and the toleration will match any taint, ensuring it runs on all nodes.
+
+```
+ tolerations:
+      - operator: Exists
+```
+
+Watch the kube-system daemon sets and wait for the calico-node daemon set to have the DESIRED number of pods in the READY state.
+```
+kubectl get daemonset calico-node --namespace=kube-system
+```
+
+Expected Output:
+
+```
+NAME          DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+calico-node   3         3         3       3            3           <none>          38s
+```
+
+## Stars policy demo
+In this sub-module we create frontend, backend, client and UI services on the EKS cluster and define network policies to allow or block communication between these services. This demo also has a management UI that shows the available ingress and egress paths between each service.
+
+### Create Resources
+Before creating network polices, let’s create the required resources.
+
+Create a new folder for the configuration files.
+```
+mkdir ~/environment/calico_resources
+cd ~/environment/calico_resources
+```
+
+#### Stars Namespace
+Copy/Paste the following commands into your Cloud9 Terminal.
+```
+cd ~/environment/calico_resources
+```
+
+Let’s examine our file by running cat namespace.yaml.
+
+```
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: stars
+```
+
+#### Create a namespace called stars:
+The yaml manifest is in YAMLS directory of this repository.
+
+```
+kubectl apply -f namespace.yaml
+```
+We will create frontend and backend deployments and services in this namespace in later steps.
+
+Copy/Paste the following commands into your Cloud9 Terminal.
+```
+cd ~/environment/calico_resources
+cat management-ui.yaml
+```
+```
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: management-ui
+  labels:
+    role: management-ui
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: management-ui
+  namespace: management-ui
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 9001
+  selector:
+    role: management-ui
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: management-ui
+  namespace: management-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: management-ui
+  template:
+    metadata:
+      labels:
+        role: management-ui
+    spec:
+      containers:
+      - name: management-ui
+        image: calico/star-collect:v0.1.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9001
+```
+
+Create a management-ui namespace, with a management-ui service and deployment within that namespace:
+```
+kubectl apply -f management-ui.yaml
+```
+
+cat backend.yaml to see how the backend service is built:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: stars
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    role: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: stars
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: backend
+  template:
+    metadata:
+      labels:
+        role: backend
+    spec:
+      containers:
+      - name: backend
+        image: calico/star-probe:v0.1.0
+        imagePullPolicy: Always
+        command:
+        - probe
+        - --http-port=6379
+        - --urls=http://frontend.stars:80/status,http://backend.stars:6379/status,http://client.client:9000/status
+        ports:
+        - containerPort: 6379
+```
+
+Let’s examine the frontend service with cat frontend.yaml:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: stars
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    role: frontend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: stars
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: frontend
+  template:
+    metadata:
+      labels:
+        role: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: calico/star-probe:v0.1.0
+        imagePullPolicy: Always
+        command:
+        - probe
+        - --http-port=80
+        - --urls=http://frontend.stars:80/status,http://backend.stars:6379/status,http://client.client:9000/status
+        ports:
+        - containerPort: 80
+```
+
+Create frontend and backend deployments and services within the stars namespace:
+```
+kubectl apply -f backend.yaml
+kubectl apply -f frontend.yaml
+```
+Lastly, let’s examine how the client namespace, and a client service for a deployment are built. cat client.yaml:
+
+```
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: client
+  labels:
+    role: client
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client
+  namespace: client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: client
+  template:
+    metadata:
+      labels:
+        role: client
+    spec:
+      containers:
+      - name: client
+        image: calico/star-probe:v0.1.0
+        imagePullPolicy: Always
+        command:
+        - probe
+        - --urls=http://frontend.stars:80/status,http://backend.stars:6379/status
+        ports:
+        - containerPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client
+  namespace: client
+spec:
+  ports:
+  - port: 9000
+    targetPort: 9000
+  selector:
+    role: client
+```
+Apply the client configuraiton.
+
+```
+kubectl apply -f client.yaml
+```
+
+Check their status, and wait for all the pods to reach the Running status:
+```
+kubectl get pods --all-namespaces
+```
+
+Your output should look like this:
+
+```
+NAMESPACE       NAME                                                  READY   STATUS    RESTARTS   AGE
+client          client-nkcfg                                          1/1     Running   0          24m
+kube-system     aws-node-6kqmw                                        1/1     Running   0          50m
+kube-system     aws-node-grstb                                        1/1     Running   1          50m
+kube-system     aws-node-m7jg8                                        1/1     Running   1          50m
+kube-system     calico-node-b5b7j                                     1/1     Running   0          28m
+kube-system     calico-node-dw694                                     1/1     Running   0          28m
+kube-system     calico-node-vtz9k                                     1/1     Running   0          28m
+kube-system     calico-typha-75667d89cb-4q4zx                         1/1     Running   0          28m
+kube-system     calico-typha-horizontal-autoscaler-78f747b679-kzzwq   1/1     Running   0          28m
+kube-system     kube-dns-7cc87d595-bd9hq                              3/3     Running   0          1h
+kube-system     kube-proxy-lp4vw                                      1/1     Running   0          50m
+kube-system     kube-proxy-rfljb                                      1/1     Running   0          50m
+kube-system     kube-proxy-wzlqg                                      1/1     Running   0          50m
+management-ui   management-ui-wzvz4                                   1/1     Running   0          24m
+stars           backend-tkjrx                                         1/1     Running   0          24m
+stars           frontend-q4r84                                        1/1     Running   0          24m
+
+```
+It may take several minutes to download all the required Docker images.
+
+To summarize the different resources we created:
+
+- A namespace called stars
+- frontend and backend deployments and services within stars namespace
+- A namespace called management-ui
+- Deployment and service management-ui for the user interface seen on the browser, in the management-ui namespace
+- A namespace called client
+- client deployment and service in client namespace
+
+### Default Pod-to-pod communication
+In Kubernetes, the pods by default can communicate with other pods, regardless of which host they land on. Every pod gets its own IP address so you do not need to explicitly create links between pods. This is demonstrated by the management-ui.
+
+```
+kind: Service
+metadata:
+  name: management-ui
+  namespace: management-ui
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 9001
+```
+To open the Management UI, retrieve the DNS name of the Management UI using:
+```
+kubectl get svc -o wide -n management-ui
+```
+
+Copy the EXTERNAL-IP from the output, and paste into a browser. The EXTERNAL-IP column contains a value that ends with “elb.amazonaws.com” - the full value is the DNS address.
+
+```
+NAME            TYPE           CLUSTER-IP     EXTERNAL-IP                                                              PORT(S)        AGE       SELECTOR
+management-ui   LoadBalancer   10.100.239.7   a8b8c5f77eda911e8b1a60ea5d5305a4-720629306.us-east-1.elb.amazonaws.com   80:31919/TCP   9s        role=management-ui
+```
+
+The UI here shows the default behavior, of all services being able to reach each other.
+![Pod to pod communication](imgs/calico-full-access.png "Cluster Creation Workflow")
+
+
+### Apply network policies
+In a production level cluster, it is not secure to have open pod to pod communication. Let’s see how we can isolate the services from each other.
+
+Copy/Paste the following commands into your Cloud9 Terminal.
+```
+cd ~/environment/calico_resources
+```
+
+Let’s examine our file by running cat default-deny.yaml.
+
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: default-deny
+spec:
+  podSelector:
+    matchLabels: {}
+```
+
+Let’s go over the network policy. Here we see the podSelector does not have any matchLabels, essentially blocking all the pods from accessing it.
+
+Apply the network policy in the stars namespace (frontend and backend services) and the client namespace (client service):
+```
+kubectl apply -n stars -f default-deny.yaml
+kubectl apply -n client -f default-deny.yaml
+```
+
+Upon refreshing your browser, you see that the management UI cannot reach any of the nodes, so nothing shows up in the UI.
+
+Network policies in Kubernetes use labels to select pods, and define rules on what traffic is allowed to reach those pods. They may specify ingress or egress or both. Each rule allows traffic which matches both the from and ports sections.
+
+Create two new network policies.
+
+Copy/Paste the following commands into your Cloud9 Terminal.
+```
+cd ~/environment/calico_resources
+```
+
+Again, we can examine our file contents by running: cat allow-ui.yaml
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  namespace: stars
+  name: allow-ui
+spec:
+  podSelector:
+    matchLabels: {}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              role: management-ui
+```
+```
+cat allow-ui-client.yaml
+```
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  namespace: client
+  name: allow-ui
+spec:
+  podSelector:
+    matchLabels: {}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              role: management-ui
+```
+Challenge:
+- How do we apply our network policies to allow the traffic we want?
+
+Solution:
+```
+kubectl apply -f allow-ui.yaml
+kubectl apply -f allow-ui-client.yaml
+```
+
+Upon refreshing your browser, you can see that the management UI can reach all the services, but they cannot communicate with each other.
+
+![Calico Mgmt UI](imgs/calico-mgmtui-access.png "Cluster Creation Workflow")
+
+
+### Allow Directional Traffic
+Let’s see how we can allow directional traffic from client to frontend, and from frontend to backend.
+
+Let’s examine this backend policy with cat backend-policy.yaml:
+
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  namespace: stars
+  name: backend-policy
+spec:
+  podSelector:
+    matchLabels:
+      role: backend
+  ingress:
+    - from:
+        - <EDIT: UPDATE WITH THE CONFIGURATION NEEDED TO WHITELIST FRONTEND USING PODSELECTOR>
+      ports:
+        - protocol: TCP
+          port: 6379
+```
+
+Challenge:
+After reviewing the manifest, you’ll see we have intentionally left few of the configuration fields for you to EDIT. Please edit the configuration as suggested. You can find helpful info in this [Kubernetes documentation](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
+
+Solution:
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  namespace: stars
+  name: backend-policy
+spec:
+  podSelector:
+    matchLabels:
+      role: backend
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: frontend
+      ports:
+        - protocol: TCP
+          port: 6379
+```
+Let’s examine the frontend policy with cat frontend-policy.yaml:
+
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  namespace: stars
+  name: frontend-policy
+spec:
+  podSelector:
+    matchLabels:
+      role: frontend
+  ingress:
+    - from:
+        - <EDIT: UPDATE WITH THE CONFIGURATION NEEDED TO WHITELIST CLIENT USING NAMESPACESELECTOR>
+      ports:
+        - protocol: TCP
+          port: 80
+
+```
+Challenge:
+Please edit the configuration as suggested. You can find helpful info in this [Kubernetes documentation](https://kubernetes.io/docs/concepts/services-networking/network-policies/)
+Solution:
+```      
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  namespace: stars
+  name: frontend-policy
+spec:
+  podSelector:
+    matchLabels:
+      role: frontend
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              role: client
+      ports:
+        - protocol: TCP
+          port: 80
+```
+To allow traffic from frontend service to the backend service apply the following manifest:
+
+```
+kubectl apply -f backend-policy.yaml
+```
+And allow traffic from the client namespace to the frontend service:
+```
+kubectl apply -f frontend-policy.yaml
+```
+Upon refreshing your browser, you should be able to see the network policies in action:
+
+![Cluster Creation Workflow](imgs/calico-client-f-b-access.png "Cluster Creation Workflow")
+Let’s have a look at the backend-policy. Its spec has a podSelector that selects all pods with the label role:backend, and allows ingress from all pods that have the label role:frontend and on TCP port 6379, but not the other way round. Traffic is allowed in one direction on a specific port number.
+
+```
+spec:
+  podSelector:
+    matchLabels:
+      role: backend
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: frontend
+      ports:
+        - protocol: TCP
+          port: 6379
+```
+The frontend-policy is similar, except it allows ingress from namespaces that have the label role: client on TCP port 80.
+
+```
+spec:
+  podSelector:
+    matchLabels:
+      role: frontend
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              role: client
+      ports:
+        - protocol: TCP
+          port: 80
+
+```
+
+### Clean Up
+
+Clean up the demo by deleting the namespaces:
+```
+kubectl delete namespace client stars management-ui
+```
+
+# Deploying Microservices to EKS Fargate
+[AWS Fargate](https://docs.aws.amazon.com/eks/latest/userguide/fargate.html) is a technology that provides on-demand, right-sized compute capacity for containers. With AWS Fargate, you no longer have to provision, configure, or scale groups of virtual machines to run containers. This removes the need to choose server types, decide when to scale your node groups, or optimize cluster packing. You can control which pods start on Fargate and how they run with [Fargate profiles](https://docs.aws.amazon.com/eks/latest/userguide/fargate-profile.html), which are defined as part of your Amazon EKS cluster.
+
+In this Chapter, we will deploy the game [2048 game](http://play2048.co/) on EKS Fargate and expose it to the Internet using an Application Load balancer.
+
+## Creating a fargate profile
+The Fargate profile allows an administrator to declare which pods run on Fargate. Each profile can have up to five selectors that contain a namespace and optional labels. You must define a namespace for every selector. The label field consists of multiple optional key-value pairs. Pods that match a selector (by matching a namespace for the selector and all of the labels specified in the selector) are scheduled on Fargate.
+
+It is generally a good practice to deploy user application workloads into namespaces other than kube-system or default so that you have more fine-grained capabilities to manage the interaction between your pods deployed on to EKS. You will now create a new Fargate profile named applications that targets all pods destined for the fargate namespace.
+
+### Create a Fargate profile
+```
+eksctl create fargateprofile \
+  --cluster eksworkshop-eksctl \
+  --name game-2048 \
+  --namespace game-2048
+```
+
+Fargate profiles are immutable. However, you can create a new updated profile to replace an existing profile and then delete the original after the updated profile has finished creating
+
+When your EKS cluster schedules pods on Fargate, the pods will need to make calls to AWS APIs on your behalf to do things like pull container images from Amazon ECR. The Fargate Pod Execution Role provides the IAM permissions to do this. This IAM role is automatically created for you by the above command.
+
+Creation of a Fargate profile can take up to several minutes. Execute the following command after the profile creation is completed and you should see output similar to what is shown below.
+```
+eksctl get fargateprofile \
+  --cluster eksworkshop-eksctl \
+  -o yaml
+```
+Output:
+
+```
+- name: game-2048
+  podExecutionRoleARN: arn:aws:iam::197520326489:role/eksctl-eksworkshop-eksctl-FargatePodExecutionRole-1NOQE05JKQEED
+  selectors:
+  - namespace: game-2048
+  subnets:
+  - subnet-02783ce3799e77b0b
+  - subnet-0aa755ffdf08aa58f
+  - subnet-0c6a156cf3d523597
+```
+
+Notice that the profile includes the private subnets in your EKS cluster. Pods running on Fargate are not assigned public IP addresses, so only private subnets (with no direct route to an Internet Gateway) are supported when you create a Fargate profile. Hence, while provisioning an EKS cluster, you must make sure that the VPC that you create contains one or more private subnets. When you create an EKS cluster with eksctl utility, under the hoods it creates a VPC that meets these requirements.
+
+## Setting up the LB Controller
+### AWS Load Balancer Controller
+The AWS ALB Ingress Controller has been rebranded to [AWS Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller).
+
+“AWS Load Balancer Controller” is a controller to help manage Elastic Load Balancers for a Kubernetes cluster.
+
+- It satisfies Kubernetes Ingress resources by provisioning Application Load Balancers.
+- It satisfies Kubernetes Service resources by provisioning Network Load Balancers.
+
+### Helm
+We will use Helm to install the ALB Ingress Controller.
+
+Check to see if helm is installed:
+```
+helm version
+```
+
+If Helm is not found, see installing helm for instructions.
+
+### Create IAM OIDC provider
+First, we will have to set up an OIDC provider with the cluster.
+
+This step is required to give IAM permissions to a Fargate pod running in the cluster using the IAM for Service Accounts feature.
+
+Learn more about IAM Roles for Service Accounts in the Amazon EKS documentation.
+```
+eksctl utils associate-iam-oidc-provider \
+    --region ${AWS_REGION} \
+    --cluster eksworkshop-eksctl \
+    --approve
+```
+
+### Create an IAM policy
+The next step is to create the IAM policy that will be used by the AWS Load Balancer Controller.
+
+This policy will be later associated to the Kubernetes Service Account and will allow the controller pods to create and manage the ELB’s resources in your AWS account for you.
+```
+aws iam create-policy \
+    --policy-name AWSLoadBalancerControllerIAMPolicy \
+    --policy-document https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
+```
+
+### Create a IAM role and ServiceAccount for the Load Balancer controller
+Next, create a Kubernetes Service Account by executing the following command
+```
+eksctl create iamserviceaccount \
+  --cluster eksworkshop-eksctl \
+  --namespace kube-system \
+  --name aws-load-balancer-controller \
+  --attach-policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/AWSLoadBalancerControllerIAMPolicy \
+  --override-existing-serviceaccounts \
+  --approve
+```
+The above command deploys a CloudFormation template that creates an IAM role and attaches the IAM policy to it.
+
+The IAM role gets associated with a Kubernetes Service Account. You can see details of the service account created with the following command.
+```
+kubectl get sa aws-load-balancer-controller -n kube-system -o yaml
+```
+Output
+
+```
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::<AWS_ACCOUNT_ID>:role/eksctl-eksworkshop-eksctl-addon-iamserviceac-Role1-1MMJRJ4LWWHD8
+  creationTimestamp: "2020-12-04T19:31:57Z"
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  resourceVersion: "3094"
+  selfLink: /api/v1/namespaces/kube-system/serviceaccounts/aws-load-balancer-controller
+  uid: aa940b27-796e-4cda-bbba-fe6ca8207c00
+secrets:
+- name: aws-load-balancer-controller-token-8pnww
+```
+For more information on IAM Roles for Service Accounts follow this link.
+
+### Install the TargetGroupBinding CRDs
+```
+kubectl apply -k github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master
+```
+
+### Deploy the Helm chart from the Amazon EKS charts repo
+Fist, We will verify if the AWS Load Balancer Controller version has beed set
+```
+if [ ! -x ${LBC_VERSION} ]
+  then
+    tput setaf 2; echo '${LBC_VERSION} has been set.'
+  else
+    tput setaf 1;echo '${LBC_VERSION} has NOT been set.'
+fi
+```
+
+If the result is ${LBC_VERSION} has NOT been set., click here for the instructions.
+```
+helm repo add eks https://aws.github.io/eks-charts
+
+export VPC_ID=$(aws eks describe-cluster \
+                --name eksworkshop-eksctl \
+                --query "cluster.resourcesVpcConfig.vpcId" \
+                --output text)
+
+helm upgrade -i aws-load-balancer-controller \
+    eks/aws-load-balancer-controller \
+    -n kube-system \
+    --set clusterName=eksworkshop-eksctl \
+    --set serviceAccount.create=false \
+    --set serviceAccount.name=aws-load-balancer-controller \
+    --set image.tag="${LBC_VERSION}" \
+    --set region=${AWS_REGION} \
+    --set vpcId=${VPC_ID}
+```
+You can check if the deployment has completed
+```
+kubectl -n kube-system rollout status deployment aws-load-balancer-controller
+```
+
+## Deploying Pods to Fargate
+
+### Deploy the sample application
+Deploy the game 2048 as a sample application to verify that the AWS Load Balancer Controller creates an Application Load Balancer as a result of the Ingress object.
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/examples/2048/2048_full.yaml
+```
+
+You can check if the deployment has completed
+```
+kubectl -n game-2048 rollout status deployment deployment-2048
+```
+
+Output:
+
+```
+Waiting for deployment "deployment-2048" rollout to finish: 0 of 5 updated replicas are available...
+Waiting for deployment "deployment-2048" rollout to finish: 1 of 5 updated replicas are available...
+Waiting for deployment "deployment-2048" rollout to finish: 2 of 5 updated replicas are available...
+Waiting for deployment "deployment-2048" rollout to finish: 3 of 5 updated replicas are available...
+Waiting for deployment "deployment-2048" rollout to finish: 4 of 5 updated replicas are available...
+deployment "deployment-2048" successfully rolled out
+```
+
+Next, run the following command to list all the nodes in the EKS cluster and you should see output as follows:
+
+```
+kubectl get nodes
+```
+Output:
+
+```
+NAME                                                    STATUS   ROLES    AGE   VERSION
+fargate-ip-192-168-110-35.us-east-2.compute.internal    Ready    <none>   47s   v1.17.9-eks-a84824
+fargate-ip-192-168-142-4.us-east-2.compute.internal     Ready    <none>   47s   v1.17.9-eks-a84824
+fargate-ip-192-168-169-29.us-east-2.compute.internal    Ready    <none>   55s   v1.17.9-eks-a84824
+fargate-ip-192-168-174-79.us-east-2.compute.internal    Ready    <none>   39s   v1.17.9-eks-a84824
+fargate-ip-192-168-179-197.us-east-2.compute.internal   Ready    <none>   50s   v1.17.9-eks-a84824
+ip-192-168-20-197.us-east-2.compute.internal            Ready    <none>   16h   v1.17.11-eks-cfdc40
+ip-192-168-33-161.us-east-2.compute.internal            Ready    <none>   16h   v1.17.11-eks-cfdc40
+ip-192-168-68-228.us-east-2.compute.internal            Ready    <none>   16h   v1.17.11-eks-cfdc40
+```
+
+If your cluster has any worker nodes, they will be listed with a name starting wit the ip- prefix.
+
+In addition to the worker nodes, if any, there will now be five additional fargate- nodes listed. These are merely kubelets from the microVMs in which your sample app pods are running under Fargate, posing as nodes to the EKS Control Plane. This is how the EKS Control Plane stays aware of the Fargate infrastructure under which the pods it orchestrates are running. There will be a “fargate” node added to the cluster for each pod deployed on Fargate.
+
+## Ingress
+### Ingress
+After few seconds, verify that the Ingress resource is enabled:
+```
+kubectl get ingress/ingress-2048 -n game-2048
+```
+You should be able to see the following output
+
+```
+NAME           HOSTS   ADDRESS                                                                   PORTS   AGE
+ingress-2048   *       k8s-game2048-ingress2-8ae3738fd5-1566954439.us-east-2.elb.amazonaws.com   80      14m
+```
+It could take 2 or 3 minutes for the ALB to be ready.
+
+From your AWS Management Console, if you navigate to the EC2 dashboard and the select Load Balancers from the menu on the left-pane, you should see the details of the ALB instance similar to the following.
+
+![Cluster Creation Workflow](imgs/LoadBalancer.png "Cluster Creation Workflow")
+
+From the left-pane, if you select Target Groups and look at the registered targets under the Targets tab, you will see the IP addresses and ports of the sample app pods listed.
+
+![Cluster Creation Workflow](imgs/LoadBalancerTargets.png "Cluster Creation Workflow")
+
+Notice that the pods have been directly registered with the load balancer whereas when we worked with worker nodes in an earlier lab, the IP address of the worker nodes and the NodePort were registered as targets. The latter case is the Instance Mode where Ingress traffic starts at the ALB and reaches the Kubernetes worker nodes through each service’s NodePort and subsequently reaches the pods through the service’s ClusterIP. While running under Fargate, ALB operates in IP Mode, where Ingress traffic starts at the ALB and reaches the Kubernetes pods directly.
+
+Illustration of request routing from an AWS Application Load Balancer to Pods on worker nodes in Instance mode:
+
+![Cluster Creation Workflow](imgs/InstanceMode.png "Cluster Creation Workflow")
+
+Illustration of request routing from an AWS Application Load Balancer to Fargate Pods in IP mode:
+
+![Cluster Creation Workflow](imgs/IPMode.png "Cluster Creation Workflow")
+
+At this point, your deployment is complete and you should be able to reach the game-2048 service from a browser using the DNS name of the ALB. You may get the DNS name of the load balancer either from the AWS Management Console or from the output of the following command.
+```
+export FARGATE_GAME_2048=$(kubectl get ingress/ingress-2048 -n game-2048 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+echo "http://${FARGATE_GAME_2048}"
+```
+
+Output should look like this
+
+```
+http://3e100955-2048game-2048ingr-6fa0-1056911976.us-east-2.elb.amazonaws.com
+```
+![Cluster Creation Workflow](imgs/Browser.svg "Cluster Creation Workflow")
+
+## Clean Up
+To delete the resources used in this chapter:
+```
+
+kubectl delete -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/examples/2048/2048_full.yaml
+
+helm uninstall aws-load-balancer-controller \
+    -n kube-system
+
+eksctl delete iamserviceaccount \
+    --cluster eksworkshop-eksctl \
+    --name aws-load-balancer-controller \
+    --namespace kube-system \
+    --wait
+
+aws iam delete-policy \
+    --policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/AWSLoadBalancerControllerIAMPolicy
+
+kubectl delete -k github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master
+
+eksctl delete fargateprofile \
+  --name game-2048 \
+  --cluster eksworkshop-eksctl
 ```
