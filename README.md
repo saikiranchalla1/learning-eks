@@ -43,7 +43,7 @@
     - [Search Chart repositories](#search-chart-repositories)
     - [Add the Bitnami Repository](#add-the-bitnami-repository)
     - [Install bitname/nginx](#install-bitnamenginx)
-    - [Clean Up](#clean-up)
+    - [cleanup](#cleanup)
   - [Deploy Example Microservices using Helm](#deploy-example-microservices-using-helm)
     - [Create a Chart](#create-a-chart)
     - [Customize Defaults](#customize-defaults)
@@ -57,7 +57,7 @@
       - [Update the demo application chart with a breaking change](#update-the-demo-application-chart-with-a-breaking-change)
       - [Deploy the updated demo application chart:](#deploy-the-updated-demo-application-chart)
       - [Rollback the failed upgrade](#rollback-the-failed-upgrade)
-    - [Clean Up](#clean-up-1)
+    - [cleanup](#cleanup-1)
 - [Health Checks](#health-checks)
   - [Configure Liveness Probe](#configure-liveness-probe)
     - [Configure the Probe](#configure-the-probe)
@@ -67,7 +67,7 @@
     - [Configure the Probe](#configure-the-probe-1)
     - [Introduce a Failure](#introduce-a-failure-1)
     - [Challenge:](#challenge-1)
-  - [Clean Up](#clean-up-2)
+  - [cleanup](#cleanup-2)
 - [Autoscaling our Applications and Cluster](#autoscaling-our-applications-and-cluster)
   - [Install kube-ops-view](#install-kube-ops-view)
   - [Configure Horizontal Pod Autoscaler (HPA)](#configure-horizontal-pod-autoscaler-hpa)
@@ -83,7 +83,7 @@
   - [Scale a cluster with CA](#scale-a-cluster-with-ca)
     - [Deploy a Sample App](#deploy-a-sample-app-1)
     - [Scale our ReplicaSet](#scale-our-replicaset)
-  - [Clean Up](#clean-up-3)
+  - [cleanup](#cleanup-3)
 - [Introduction to RBAC](#introduction-to-rbac)
   - [What is RBAC?](#what-is-rbac)
     - [Objectives for this module](#objectives-for-this-module)
@@ -93,7 +93,7 @@
   - [Test the new user](#test-the-new-user)
   - [Create the role and the role binding](#create-the-role-and-the-role-binding)
   - [Verify the role and binding](#verify-the-role-and-binding)
-  - [Clean up](#clean-up)
+  - [cleanup](#cleanup-4)
 - [Using IAM groups to manage Kubernetes cluster access](#using-iam-groups-to-manage-kubernetes-cluster-access)
   - [Kubernetes authenticationIn the intro to RBAC module, we have seen how we can give access to individual users to Kubernetes.](#kubernetes-authenticationin-the-intro-to-rbac-module-we-have-seen-how-we-can-give-access-to-individual-users-to-kubernetes)
   - [Create IAM Roles](#create-iam-roles)
@@ -115,7 +115,7 @@
       - [Test with integ profile](#test-with-integ-profile)
       - [Test with admin profile](#test-with-admin-profile)
   - [Conclusion](#conclusion)
-  - [Clean Up](#clean-up-4)
+  - [cleanup](#cleanup-5)
 - [IAM Roles for Service Accounts](#iam-roles-for-service-accounts)
   - [Preparation](#preparation)
     - [Enabling IAM Roles for Service Accounts on your Cluster](#enabling-iam-roles-for-service-accounts-on-your-cluster)
@@ -127,7 +127,7 @@
   - [Deploy Sample POD](#deploy-sample-pod)
     - [List S3 buckets](#list-s3-buckets)
     - [List EC2 Instances](#list-ec2-instances)
-  - [Clean Up](#clean-up-5)
+  - [cleanup](#cleanup-6)
 - [Security Groups for PODs](#security-groups-for-pods)
     - [Introduction](#introduction-1)
     - [Objectives](#objectives)
@@ -142,7 +142,7 @@
     - [Deployments](#deployments)
     - [Green Pod](#green-pod)
     - [Red Pod](#red-pod)
-    - [Clean Up](#clean-up-6)
+    - [cleanup](#cleanup-7)
 - [Securing cluster with network policies](#securing-cluster-with-network-policies)
   - [Create network policies using Calico](#create-network-policies-using-calico)
   - [Install Calico](#install-calico)
@@ -153,7 +153,7 @@
     - [Default Pod-to-pod communication](#default-pod-to-pod-communication)
     - [Apply network policies](#apply-network-policies)
     - [Allow Directional Traffic](#allow-directional-traffic)
-    - [Clean Up](#clean-up-7)
+    - [cleanup](#cleanup-8)
 - [Deploying Microservices to EKS Fargate](#deploying-microservices-to-eks-fargate)
   - [Creating a fargate profile](#creating-a-fargate-profile)
     - [Create a Fargate profile](#create-a-fargate-profile)
@@ -169,7 +169,77 @@
     - [Deploy the sample application](#deploy-the-sample-application)
   - [Ingress](#ingress)
     - [Ingress](#ingress-1)
-  - [Clean Up](#clean-up-8)
+  - [cleanup](#cleanup-9)
+- [Migrate workloads to EKS](#migrate-workloads-to-eks)
+  - [Create the KIND cluster](#create-the-kind-cluster)
+  - [Deploy Counter APp to KIND](#deploy-counter-app-to-kind)
+  - [Expose Counter APP from KIND](#expose-counter-app-from-kind)
+  - [Configure EKS Cluster](#configure-eks-cluster)
+  - [Deploy Counter APP to EKS](#deploy-counter-app-to-eks)
+  - [Deploying database to EKS](#deploying-database-to-eks)
+  - [cleanup](#cleanup-10)
+- [Deploy Jenkins](#deploy-jenkins)
+  - [Codecommit repository, access and code](#codecommit-repository-access-and-code)
+  - [Creating the Jenkins Service Account](#creating-the-jenkins-service-account)
+  - [Deploy Jenkins](#deploy-jenkins-1)
+    - [Install Jenkins](#install-jenkins)
+  - [Logging In](#logging-in)
+  - [Setup Multibranch Projects](#setup-multibranch-projects)
+  - [cleanup](#cleanup-11)
+- [Continuous Delivery with Spinnaker](#continuous-delivery-with-spinnaker)
+  - [Spinnaker Overview](#spinnaker-overview)
+    - [Spinnaker Architecture](#spinnaker-architecture)
+    - [Spinnaker Concepts](#spinnaker-concepts)
+  - [Install Spinnaker Operator](#install-spinnaker-operator)
+    - [PreRequisites](#prerequisites)
+    - [EKS cluster setup](#eks-cluster-setup)
+    - [Install Spinnaker CRDs](#install-spinnaker-crds)
+    - [Install Spinnaker Operator](#install-spinnaker-operator-1)
+  - [Artifact Configuration](#artifact-configuration)
+    - [Configure Spinnaker Release Version](#configure-spinnaker-release-version)
+    - [Configure S3 Artifact](#configure-s3-artifact)
+    - [Set up environment variables](#set-up-environment-variables)
+    - [Configure persistentStorage](#configure-persistentstorage)
+    - [Configure ECR Artifact](#configure-ecr-artifact)
+    - [Create a configmap](#create-a-configmap)
+    - [Add a sidecar for token refresh](#add-a-sidecar-for-token-refresh)
+  - [Add EKS Account](#add-eks-account)
+    - [Download the latest spinnaker-tools release](#download-the-latest-spinnaker-tools-release)
+    - [Setup environment variables](#setup-environment-variables)
+    - [Create the service account](#create-the-service-account)
+    - [Configure EKS Account](#configure-eks-account)
+  - [Install Spinnaker](#install-spinnaker)
+    - [Install Spinnaker Service](#install-spinnaker-service)
+    - [Test the setup on Spinnaker UI](#test-the-setup-on-spinnaker-ui)
+    - [Create a test application](#create-a-test-application)
+    - [Create a test pipeline](#create-a-test-pipeline)
+  - [Testing Helm-based Pipeline](#testing-helm-based-pipeline)
+    - [Spinnaker UI](#spinnaker-ui)
+      - [Create application](#create-application)
+      - [Create Pipeline](#create-pipeline)
+      - [Setup Trigger](#setup-trigger)
+      - [Setup Bake Stage](#setup-bake-stage)
+    - [Setup Deploy Stage](#setup-deploy-stage)
+    - [Test Deployment](#test-deployment)
+    - [Get deploymet details](#get-deploymet-details)
+  - [cleanup](#cleanup-12)
+    - [Delete Spinnaker artifacts](#delete-spinnaker-artifacts)
+    - [(Optional) Create Old Nodegroup](#optional-create-old-nodegroup)
+    - [Delete Nodegroup](#delete-nodegroup)
+- [Patching/Upgrading Your EKS Cluster](#patchingupgrading-your-eks-cluster)
+  - [The Upgrade Process](#the-upgrade-process)
+  - [Upgrade EKS COntrol Plane](#upgrade-eks-control-plane)
+  - [Upgrade EKS COre Add-ons](#upgrade-eks-core-add-ons)
+  - [Upgrade Managed Node Group](#upgrade-managed-node-group)
+- [Conclusion](#conclusion-1)
+  - [What we've accomplished?](#what-weve-accomplished)
+- [Final cleanup](#final-cleanup)
+  - [Undeploy the applications](#undeploy-the-applications)
+  - [Delete the EKSCTL Cluster](#delete-the-eksctl-cluster)
+  - [Cleanup the Workspace](#cleanup-the-workspace)
+- [Useful Resources](#useful-resources)
+  - [Tools for AWS Fargate and Amazon ECS](#tools-for-aws-fargate-and-amazon-ecs)
+- [What to learn next?](#what-to-learn-next)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -1093,7 +1163,7 @@ When the Service does come online, you should see a welcome message similar to:
 
 Congratulations! You’ve now successfully deployed the nginx standalone web server to your EKS cluster!
 
-### Clean Up
+### cleanup
 To remove all the objects that the Helm Chart created, we can use [Helm uninstall](https://helm.sh/docs/helm/helm_uninstall/).
 
 Before we uninstall our application, we can verify what we have running via the [Helm list](https://helm.sh/docs/helm/helm_list/) command:
@@ -1395,7 +1465,7 @@ ecsdemo-frontend-7f5ddc5485-8vqck   1/1     Running   0          6m
 ecsdemo-nodejs-58977c4597-r6hvj     1/1     Running   0          6m
 ```
 
-### Clean Up
+### cleanup
 To delete the workshop release, run:
 
 ```
@@ -1623,7 +1693,7 @@ kubectl exec -it <YOUR-READINESS-POD-NAME> -- touch /tmp/healthy
 kubectl get pods -l app=readiness-deployment
 ```
 
-## Clean Up
+## cleanup
 Our Liveness Probe example used HTTP request and Readiness Probe executed a command to check health of a pod. Same can be accomplished using a TCP request as described in the [documentation](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/).
 
 ```
@@ -1900,6 +1970,7 @@ Deploy the Cluster Autoscaler to your cluster with the following command.
 __The required YAML manifest file is in the `yamls` directory of the repository__
 
 ```
+cd ~/environment/learning-eks
 kubectl apply -f yamls/cluster-autoscaler-autodiscover.yaml
 ```
 
@@ -2029,7 +2100,7 @@ ip-192-168-55-187.us-east-2.compute.internal   Ready    <none>   3d6h   v1.17.7-
 ip-192-168-82-113.us-east-2.compute.internal   Ready    <none>   8h     v1.17.7-eks-bffbac
 ```
 
-## Clean Up
+## cleanup
 ```
 kubectl delete -f ~/environment/cluster-autoscaler/nginx.yaml
 
@@ -2349,7 +2420,7 @@ Error from server (Forbidden): pods is forbidden: User "rbac-user" cannot list r
 
 Because the role you are bound to does not give you access to any namespace other than rbac-test.
 
-## Clean up
+## cleanup
 Once you have completed this module, you can cleanup the files and resources you created by issuing the following commands:
 ```
 unset AWS_SECRET_ACCESS_KEY
@@ -3024,7 +3095,7 @@ In this module, we have seen how to configure EKS to provide finer access to use
 
 Users will only have to configure their AWS CLI in order to automatically retrieve their associated rights in your cluster.
 
-## Clean Up
+## cleanup
 Once you have completed this module, you can cleanup the files and resources you created by issuing the following commands:
 
 ```
@@ -3358,7 +3429,7 @@ Output:
 An error occurred (UnauthorizedOperation) when calling the DescribeInstances operation: You are not authorized to perform this operation.
 ```
 
-## Clean Up
+## cleanup
 To cleanup, follow these steps.
 ```
 kubectl delete -f ~/environment/irsa/job-s3.yaml
@@ -3876,7 +3947,7 @@ Based on this policy, only one of the two pods was able to connect to the databa
 
 Finally using the CLI and the AWS console, we were able to locate the pod’s ENI and verify that the Security Group was attached to it.
 
-### Clean Up
+### cleanup
 ```
 
 export VPC_ID=$(aws eks describe-cluster \
@@ -4591,9 +4662,9 @@ spec:
 
 ```
 
-### Clean Up
+### cleanup
 
-Clean up the demo by deleting the namespaces:
+cleanup the demo by deleting the namespaces:
 ```
 kubectl delete namespace client stars management-ui
 ```
@@ -4601,7 +4672,7 @@ kubectl delete namespace client stars management-ui
 # Deploying Microservices to EKS Fargate
 [AWS Fargate](https://docs.aws.amazon.com/eks/latest/userguide/fargate.html) is a technology that provides on-demand, right-sized compute capacity for containers. With AWS Fargate, you no longer have to provision, configure, or scale groups of virtual machines to run containers. This removes the need to choose server types, decide when to scale your node groups, or optimize cluster packing. You can control which pods start on Fargate and how they run with [Fargate profiles](https://docs.aws.amazon.com/eks/latest/userguide/fargate-profile.html), which are defined as part of your Amazon EKS cluster.
 
-In this Chapter, we will deploy the game [2048 game](http://play2048.co/) on EKS Fargate and expose it to the Internet using an Application Load balancer.
+In this module, we will deploy the game [2048 game](http://play2048.co/) on EKS Fargate and expose it to the Internet using an Application Load balancer.
 
 ## Creating a fargate profile
 The Fargate profile allows an administrator to declare which pods run on Fargate. Each profile can have up to five selectors that contain a namespace and optional labels. You must define a namespace for every selector. The label field consists of multiple optional key-value pairs. Pods that match a selector (by matching a namespace for the selector and all of the labels specified in the selector) are scheduled on Fargate.
@@ -4852,8 +4923,8 @@ http://3e100955-2048game-2048ingr-6fa0-1056911976.us-east-2.elb.amazonaws.com
 ```
 ![Cluster Creation Workflow](imgs/Browser.svg "Cluster Creation Workflow")
 
-## Clean Up
-To delete the resources used in this chapter:
+## cleanup
+To delete the resources used in this module:
 ```
 
 kubectl delete -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/examples/2048/2048_full.yaml
@@ -4876,3 +4947,2114 @@ eksctl delete fargateprofile \
   --name game-2048 \
   --cluster eksworkshop-eksctl
 ```
+
+# Migrate workloads to EKS
+![Cluster Creation Workflow](imgs/counter-app.gif "Cluster Creation Workflow")
+
+In this module we will migrate a workload from a self managed kind cluster to an EKS cluster. The workload will have a stateless frontend and a stateful database backend. You’ll need to follow the steps to create a Cloud9 workspace. Make sure you update your IAM permissions with an eksworkshop-admin role.
+
+When you create your Cloud9 instance you should select an instance size with at least 8 GB of memory (eg m5.large) because we are going to create a kind cluster we will migrate workloads from.
+
+We’ll need a few environment variables throughout this section so let’s set those up now. Unless specified all commands should be run from your Cloud9 instance.
+```
+export CLUSTER=eksworkshop
+export AWS_ZONE=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+export AWS_REGION=${AWS_ZONE::-1}
+export AWS_DEFAULT_REGION=${AWS_REGION}
+export ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+export INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+export MAC=$(curl -s http://169.254.169.254/latest/meta-data/mac)
+export SECURITY_GROUP=$(curl -s http://169.254.169.254/latest/meta-data/network/interfaces/macs/${MAC}/security-group-ids)
+export SUBNET=$(curl -s http://169.254.169.254/latest/meta-data/network/interfaces/macs/${MAC}/subnet-id)
+export VPC=$(curl -s http://169.254.169.254/latest/meta-data/network/interfaces/macs/${MAC}/vpc-id)
+export IP=$(ip -4 addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+
+printf "export CLUSTER=$CLUSTER\nexport ACCOUNT_ID=$ACCOUNT_ID\nexport AWS_REGION=$AWS_REGION\nexport AWS_DEFAULT_REGION=${AWS_REGION}\nexport AWS_ZONE=$AWS_ZONE\nexport INSTANCE_ID=$INSTANCE_ID\nexport MAC=$MAC\nexport SECURITY_GROUP=$SECURITY_GROUP\nexport SUBNET=$SUBNET\nexport VPC=$VPC\nexport IP=$IP" | tee -a ~/.bash_profile
+. ~/.bash_profile
+```
+
+Now we can expand the Cloud9 root volume
+```
+curl -sL 'https://eksworkshop.com/intermediate/200_migrate_to_eks/resize-ebs.sh' | bash
+```
+
+Install kubectl, kind, aws-iam-authenticator, eksctl and update aws
+```
+# Install kubectl
+curl -sLO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+rm -f ./kubectl
+
+# install eksctl
+curl -sLO "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz"
+tar xz -C /tmp -f "eksctl_$(uname -s)_amd64.tar.gz"
+sudo install -o root -g root -m 0755 /tmp/eksctl /usr/local/bin/eksctl
+rm -f ./"eksctl_$(uname -s)_amd64.tar.gz"
+
+# install aws-iam-authenticator
+curl -sLO "https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/aws-iam-authenticator"
+sudo install -o root -g root -m 0755 aws-iam-authenticator /usr/local/bin/aws-iam-authenticator
+rm -f ./aws-iam-authenticator
+
+# install kind
+curl -sLo kind "https://kind.sigs.k8s.io/dl/v0.11.0/kind-linux-amd64"
+sudo install -o root -g root -m 0755 kind /usr/local/bin/kind
+rm -f ./kind
+
+# install awscliv2
+curl -sLo "awscliv2.zip" "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+rm -rf ./awscliv2.zip ./aws
+
+# setup tab completion
+/usr/local/bin/kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl >/dev/null
+/usr/local/bin/eksctl completion bash | sudo tee /etc/bash_completion.d/eksctl >/dev/null
+
+echo 'source /usr/share/bash-completion/bash_completion' >> $HOME/.bashrc
+. $HOME/.bashrc
+```
+
+Once you have everything done use eksctl to create an EKS cluster with the following command
+```
+eksctl create cluster --name $CLUSTER \
+    --managed --enable-ssm
+```
+
+## Create the KIND cluster
+While our EKS cluster is being created we can create a kind cluster locally. Before we create one lets make sure our network rules are set up
+
+This is going to manually create some iptables rules to route traffic to your Cloud9 instance. If you reboot the VM you will have to run these commands again as they persistent.
+```
+echo 'net.ipv4.conf.all.route_localnet = 1' | sudo tee /etc/sysctl.conf
+sudo sysctl -p /etc/sysctl.conf
+sudo iptables -t nat -A PREROUTING -p tcp -d 169.254.170.2 --dport 80 -j DNAT --to-destination 127.0.0.1:51679
+sudo iptables -t nat -A OUTPUT -d 169.254.170.2 -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 51679
+```
+
+Create a config file for the kind cluster
+```
+cat > kind.yaml <<EOF
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+  image: kindest/node:v1.19.11@sha256:07db187ae84b4b7de440a73886f008cf903fcf5764ba8106a9fd5243d6f32729
+  extraPortMappings:
+  - containerPort: 30000
+    hostPort: 30000
+  - containerPort: 30001
+    hostPort: 30001
+EOF
+```
+Create the local kind cluster
+```
+kind create cluster --config kind.yaml
+```
+
+Set the default context to the EKS cluster.
+```
+kubectl config use-context "${INSTANCE_ID}@${CLUSTER}.${AWS_REGION}.eksctl.io"
+```
+
+## Deploy Counter APp to KIND
+Once the kind cluster is ready we can check it with
+```
+kubectl --context kind-kind get nodes
+```
+
+Deploy our postgres database to the cluster. First create a ConfigMap to initialize an empty database and then create a PersistentVolume on hostPath to store the data.
+```
+cat <<EOF | kubectl --context kind-kind apply -f -
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres
+data:
+  POSTGRES_PASSWORD: supersecret
+  init: |
+    CREATE TABLE importantdata (
+    id int4 PRIMARY KEY,
+    count int4 NOT NULL
+    );
+
+    INSERT INTO importantdata (id , count) VALUES (1, 0);
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv-volume
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: postgres
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+EOF
+```
+
+Now deploy a Postgres StatefulSet and service. You can see we mount the ConfigMap and PersistentVolumeClaim
+```
+cat <<EOF | kubectl --context kind-kind apply -f -
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  serviceName: postgres
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: postgres
+          image: postgres:13
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+            - mountPath: /docker-entrypoint-initdb.d
+              name: init
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+        - name: init
+          configMap:
+            name: postgres-config
+            items:
+            - key: init
+              path: init.sql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+   - port: 5432
+  selector:
+   app: postgres
+EOF
+```
+
+Finally deploy the counter frontend and NodePort service
+```
+cat <<EOF | kubectl --context kind-kind apply -f -
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counter
+  labels:
+    app: counter
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: counter
+  template:
+    metadata:
+      labels:
+        app: counter
+    spec:
+      containers:
+      - name: counter
+        image: public.ecr.aws/aws-containers/stateful-counter:latest
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: counter-service
+spec:
+  type: NodePort
+  selector:
+    app: counter
+  ports:
+    - port: 8000
+      name: http
+      nodePort: 30000
+EOF
+```
+
+You can verify that your application and database is running with
+```
+kubectl --context kind-kind get pods
+```
+
+## Expose Counter APP from KIND
+An app that’s not exposed isn’t very useful. We’ll manually create a load balancer to expose the app.
+
+The first thing you need to do is get your local computer’s public ip address. Open a new browser tab and to icanhasip.com and copy the IP address.
+
+Go back to the Cloud9 shell and save that IP address as an environment variable
+```
+export PUBLIC_IP=#YOUR PUBLIC IP
+```
+
+Now allow your IP address to access port 80 of your Cloud9 instance’s security group and allow traffic on the security group for a load balancer.
+```
+aws ec2 authorize-security-group-ingress \
+    --group-id $SECURITY_GROUP \
+    --protocol tcp \
+    --port 80 \
+    --cidr ${PUBLIC_IP}/25
+
+aws ec2 authorize-security-group-ingress \
+    --group-id $SECURITY_GROUP \
+    --protocol -1 \
+    --source-group $SECURITY_GROUP
+```
+Create an Application Load Balancer (ALB) in the same security group and subnet. An ALB needs to be spread across a minimum of two subnets.
+```
+export ALB_ARN=$(aws elbv2 create-load-balancer \
+    --name counter \
+    --subnets $(aws ec2 describe-subnets \
+        --filters "Name=vpc-id,Values=$VPC" \
+        --query 'Subnets[*].SubnetId' \
+        --output text) \
+    --type application --security-groups $SECURITY_GROUP \
+    --query 'LoadBalancers[0].LoadBalancerArn' \
+    --output text)
+```
+Create a target group
+```
+export TG_ARN=$(aws elbv2 create-target-group \
+    --name counter-target --protocol HTTP \
+    --port 30000 --target-type instance \
+    --vpc-id ${VPC} --query 'TargetGroups[0].TargetGroupArn' \
+    --output text)
+```
+Register our node to the TG
+```
+aws elbv2 register-targets \
+    --target-group-arn ${TG_ARN} \
+    --targets Id=${INSTANCE_ID}
+```
+Create a listener and default action
+```
+aws elbv2 wait load-balancer-available \
+    --load-balancer-arns $ALB_ARN \
+    && export ALB_LISTENER=$(aws elbv2 create-listener \
+    --load-balancer-arn ${ALB_ARN} \
+    --port 80 --protocol HTTP \
+    --default-actions Type=forward,TargetGroupArn=${TG_ARN} \
+    --query 'Listeners[0].ListenerArn' \
+    --output text)
+```
+Our local counter app should now be exposed from the ALB
+```
+echo "http://"$(aws elbv2 describe-load-balancers \
+    --load-balancer-arns $ALB_ARN \
+    --query 'LoadBalancers[0].DNSName' --output text)
+```
+
+Make sure you click the button a lot because that’s the important data we’re going to migrate to EKS later.
+![Cluster Creation Workflow](imgs/counter-app_1.gif "Cluster Creation Workflow")
+
+## Configure EKS Cluster
+We created an EKS cluster cluster with a managed node group and OIDC. For Postgres persistent storage we’re going to use a host path for the sake of this workshop but it would be advised to use Amazon Elastic File System (EFS) because it’s a regional storage service. If the Postgres pod moves availability zones data will still be available.
+
+To let traffic cross between EKS and Cloud9 we need to create a VPC peer between our Cloud9 instance and our EKS cluster.
+```
+export EKS_VPC=$(aws eks describe-cluster \
+    --name ${CLUSTER} \
+    --query "cluster.resourcesVpcConfig.vpcId" \
+    --output text)
+
+export PEERING_ID=$(aws ec2 create-vpc-peering-connection \
+    --vpc-id $VPC --peer-vpc-id $EKS_VPC \
+    --query 'VpcPeeringConnection.VpcPeeringConnectionId' \
+    --output text)
+
+aws ec2 accept-vpc-peering-connection \
+    --vpc-peering-connection-id $PEERING_ID
+
+aws ec2 modify-vpc-peering-connection-options \
+    --vpc-peering-connection-id $PEERING_ID \
+    --requester-peering-connection-options '{"AllowDnsResolutionFromRemoteVpc":true}' \
+    --accepter-peering-connection-options '{"AllowDnsResolutionFromRemoteVpc":true}'
+```
+Allow traffic from the EKS from the EKS VPC and Security group to our Cloud9 instance
+```
+export EKS_SECURITY_GROUP=$(aws cloudformation list-exports \
+    --query "Exports[*]|[?Name=='eksctl-$CLUSTER-cluster::SharedNodeSecurityGroup'].Value" \
+    --output text)
+
+export EKS_CIDR_RANGES=$(aws ec2 describe-subnets \
+    --filter "Name=vpc-id,Values=$EKS_VPC" \
+    --query 'Subnets[*].CidrBlock' \
+    --output text)
+
+for CIDR in $(echo $EKS_CIDR_RANGES); do
+    aws ec2 authorize-security-group-ingress \
+        --group-id $SECURITY_GROUP \
+        --ip-permissions IpProtocol=tcp,FromPort=1024,ToPort=65535,IpRanges="[{CidrIp=$CIDR}]"
+done
+
+export CIDR_RANGES=$(aws ec2 describe-subnets \
+    --filter "Name=vpc-id,Values=$VPC" \
+    --query 'Subnets[*].CidrBlock' \
+    --output text)
+
+for CIDR in $(echo $CIDR_RANGES); do
+    aws ec2 authorize-security-group-ingress \
+        --group-id $EKS_SECURITY_GROUP \
+        --ip-permissions IpProtocol=tcp,FromPort=1024,ToPort=65535,IpRanges="[{CidrIp=$CIDR}]"
+done
+```
+
+Finally create routes in both VPCs to route traffic
+```
+export CIDR_BLOCK_1=$(aws ec2 describe-vpc-peering-connections \
+    --query "VpcPeeringConnections[?VpcPeeringConnectionId=='$PEERING_ID'].AccepterVpcInfo.CidrBlock" \
+    --output text)
+
+export CIDR_BLOCK_2=$(aws ec2 describe-vpc-peering-connections \
+    --query "VpcPeeringConnections[?VpcPeeringConnectionId=='$PEERING_ID'].RequesterVpcInfo.CidrBlock" \
+    --output text)
+
+export EKS_RT=$(aws cloudformation list-stack-resources \
+    --query "StackResourceSummaries[?LogicalResourceId=='PublicRouteTable'].PhysicalResourceId" \
+    --stack-name eksctl-${CLUSTER}-cluster \
+    --output text)
+
+export RT=$(aws ec2 describe-route-tables \
+    --filter "Name=vpc-id,Values=${VPC}" \
+    --query 'RouteTables[0].RouteTableId' \
+    --output text)
+
+aws ec2 create-route \
+    --route-table-id $EKS_RT \
+    --destination-cidr-block $CIDR_BLOCK_2 \
+    --vpc-peering-connection-id $PEERING_ID
+
+aws ec2 create-route \
+    --route-table-id $RT \
+    --destination-cidr-block $CIDR_BLOCK_1 \
+    --vpc-peering-connection-id $PEERING_ID
+```
+
+Now that traffic will route between our clusters we can deploy our application to the EKS cluster.
+
+## Deploy Counter APP to EKS
+Now it’s time to migrate our app to EKS. We’re going to do this in two stages.
+
+First we’ll move the frontend component but have it talk to the database in our old cluster. Then we’ll set up the database in EKS, migrate the data, and configure the frontend to use it instead.
+
+The counter app deployment and service is the same as it was in kind except we added two environment varibles for the `DB_HOST` and `DB_PORT` and the service type is LoadBalancer instead of NodePort.
+```
+cat <<EOF | kubectl apply -f -
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counter
+  labels:
+    app: counter
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: counter
+  template:
+    metadata:
+      labels:
+        app: counter
+    spec:
+      containers:
+      - name: counter
+        image: public.ecr.aws/aws-containers/stateful-counter:latest
+        env:
+        - name: DB_HOST
+          value: $IP
+        - name: DB_PORT
+          value: "30001"
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: counter
+spec:
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: LoadBalancer
+  selector:
+    app: counter
+EOF
+```
+
+Now create a postgres-external service in kind that exposes postgres on a NodePort.
+```
+cat <<EOF | kubectl --context kind-kind apply -f -
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-external
+  labels:
+    app: postgres
+spec:
+  type: NodePort
+  ports:
+    - port: 5432
+      nodePort: 30001
+  selector:
+   app: postgres
+EOF
+```
+
+Now you should be able to get the endpoint for your load balancer and when you load the counter app the same count will be shown in the app.
+```
+kubectl get svc
+```
+
+## Deploying database to EKS
+The final step is to move the database from our kind cluster into EKS. There are lots of different options for how you might want to migrate application state. In many cases using an external database such as Amazon Relational Database Service (RDS) is a great fit.
+
+For production data you’ll want to set up a way where you can verify correctness of your state or automatic syncing between environments. For this workshop we’re going to manually move our database state.
+
+The first thing we need to do is create a Postgres database with hostPath persistent storage in Kubernetes. We’ll use the exact same ConfigMap from kind to generate an empty database first.
+
+All of the config for Postgres is the same as it was for kind
+```
+cat <<EOF | kubectl apply -f -
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres
+data:
+  POSTGRES_PASSWORD: supersecret
+  init: |
+    CREATE TABLE importantdata (
+    id int4 PRIMARY KEY,
+    count int4 NOT NULL
+    );
+
+    INSERT INTO importantdata (id , count) VALUES (1, 0);
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv-volume
+  labels:
+    type: local
+    app: postgres
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: postgres
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+EOF
+```
+
+Deploy the postgres StatefulSet
+```
+cat <<EOF | kubectl apply -f -
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  serviceName: postgres
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: postgres
+          image: postgres:13
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+            - mountPath: /docker-entrypoint-initdb.d
+              name: init
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+        - name: init
+          configMap:
+            name: postgres-config
+            items:
+            - key: init
+              path: init.sql
+EOF
+```
+
+Backup the data from our kind Postgres database and restore it to EKS using standard postgres tools.
+```
+kubectl --context kind-kind exec -t postgres-0 -- pg_dumpall -c -U postgres > postgres_dump.sql
+```
+
+Restore database
+```
+cat postgres_dump.sql | kubectl exec -i postgres-0 -- psql -U postgres
+```
+
+Now we can deploy a postgres service inside EKS to point to the new database endpoint. This is the exact same postgres service we deployed to kind.
+```
+cat <<EOF | kubectl apply -f -
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  type: ClusterIP
+  ports:
+   - port: 5432
+  selector:
+   app: postgres
+EOF
+```
+
+Finally we need to update the counter application to remove the two environment variables we added for the external database.
+```
+cat <<EOF | kubectl apply -f -
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: counter
+  labels:
+    app: counter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: counter
+  template:
+    metadata:
+      labels:
+        app: counter
+    spec:
+      containers:
+      - name: counter
+        image: public.ecr.aws/aws-containers/stateful-counter:latest
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "16Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+EOF
+```
+Open your browser to this link
+```
+echo "http://"$(kubectl get svc counter --output jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+```
+
+## cleanup
+Delete EKS resources
+```
+kubectl delete svc/counter svc/postgres deploy/counter statefulset/postgres
+```
+
+Delete ALB
+```
+aws elbv2 delete-listener \
+    --listener-arn $ALB_LISTENER
+
+aws elbv2 delete-load-balancer \
+    --load-balancer-arn $ALB_ARN
+
+aws elbv2 delete-target-group \
+    --target-group-arn $TG_ARN
+```
+Delete VPC peering
+```
+aws ec2 delete-vpc-peering-connection \
+    --vpc-peering-connection-id $PEERING_ID
+```
+Delete EKS cluster
+```
+eksctl delete cluster --name $CLUSTER
+```
+
+# Deploy Jenkins
+In this module, we will deploy Jenkins using the Helm package manager we installed in the Helm module and the OIDC identity provider we setup in the IAM Roles for Service Accounts module.
+
+## Codecommit repository, access and code
+We’ll start by creating a CodeCommit repository to store our example application. This repository will store our application code and Jenkinsfile.
+```
+aws codecommit create-repository --repository-name eksworkshop-app
+```
+
+We’ll create an IAM user with our HTTPS Git credentials for AWS CodeCommit to clone our repository and to push additional commits. This user needs an IAM Policy for access to CodeCommit.
+```
+aws iam create-user \
+  --user-name git-user
+
+aws iam attach-user-policy \
+  --user-name git-user \
+  --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser
+
+aws iam create-service-specific-credential \
+  --user-name git-user --service-name codecommit.amazonaws.com \
+  | tee /tmp/gituser_output.json
+
+GIT_USERNAME=$(cat /tmp/gituser_output.json | jq -r '.ServiceSpecificCredential.ServiceUserName')
+GIT_PASSWORD=$(cat /tmp/gituser_output.json | jq -r '.ServiceSpecificCredential.ServicePassword')
+CREDENTIAL_ID=$(cat /tmp/gituser_output.json | jq -r '.ServiceSpecificCredential.ServiceSpecificCredentialId')
+```
+The repository will require some initial code so we’ll clone the repository and add a simple Go application.
+```
+sudo pip install git-remote-codecommit
+
+git clone codecommit::${AWS_REGION}://eksworkshop-app
+cd eksworkshop-app
+```
+
+server.go contains our simple application.
+```
+cat << EOF > server.go
+
+package main
+
+import (
+    "fmt"
+    "net/http"
+)
+
+func helloWorld(w http.ResponseWriter, r *http.Request){
+    fmt.Fprintf(w, "Hello World")
+}
+
+func main() {
+    http.HandleFunc("/", helloWorld)
+    http.ListenAndServe(":8080", nil)
+}
+EOF
+```
+
+server_test.go contains our unit tests.
+```
+cat << EOF > server_test.go
+
+package main
+
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
+
+func Test_helloWorld(t *testing.T) {
+	req, err := http.NewRequest("GET", "http://domain.com/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res := httptest.NewRecorder()
+	helloWorld(res, req)
+
+	exp := "Hello World"
+	act := res.Body.String()
+	if exp != act {
+		t.Fatalf("Expected %s got %s", exp, act)
+	}
+}
+
+EOF
+```
+
+The Jenkinsfile will contain our pipeline declaration, the additional containers in our build agent pods, and which container will be used for each step of the pipeline.
+```
+cat << EOF > Jenkinsfile
+pipeline {
+  agent {
+    kubernetes {
+      yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: golang
+    image: golang:1.13
+    command:
+    - cat
+    tty: true
+"""
+    }
+  }
+  stages {
+    stage('Run tests') {
+      steps {
+        container('golang') {
+          sh 'go test'
+        }
+      }
+    }
+    stage('Build') {
+        steps {
+            container('golang') {
+              sh 'go build -o eksworkshop-app'
+              archiveArtifacts "eksworkshop-app"
+            }
+
+        }
+    }
+
+  }
+}
+
+EOF
+```
+
+We’ll add the code our code, commit the change, and then push the code to our repository.
+```
+git add --all && git commit -m "Initial commit." && git push
+cd ~/environment
+```
+
+## Creating the Jenkins Service Account
+We’ll create a service account for Kubernetes to grant to pods if they need to perform CodeCommit API actions (e.g. GetCommit, ListBranches). This will allow Jenkins to respond to new repositories, branches, and commits.
+
+If you have not completed the IAM Roles for Service Accounts lab, please complete the Create an OIDC identity provider step now. You do not need to complete any other sections of that lab.
+```
+eksctl create iamserviceaccount \
+    --name jenkins \
+    --namespace default \
+    --cluster eksworkshop-eksctl \
+    --attach-policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser \
+    --approve \
+    --override-existing-serviceaccounts
+```
+
+## Deploy Jenkins
+### Install Jenkins
+We’ll begin by creating the values.yaml to declare the configuration of our Jenkins installation.
+```
+cat << EOF > values.yaml
+---
+controller:
+  # Used for label app.kubernetes.io/component
+  componentName: "jenkins-controller"
+  image: "jenkins/jenkins"
+  tag: "2.289.2-lts-jdk11"
+  additionalPlugins:
+    - aws-codecommit-jobs:0.3.0
+    - aws-java-sdk:1.11.995
+    - junit:1.51
+    - ace-editor:1.1
+    - workflow-support:3.8
+    - pipeline-model-api:1.8.5
+    - pipeline-model-definition:1.8.5
+    - pipeline-model-extensions:1.8.5
+    - workflow-job:2.41
+    - credentials-binding:1.26
+    - aws-credentials:1.29
+    - credentials:2.5
+    - lockable-resources:2.11
+    - branch-api:2.6.4
+  resources:
+    requests:
+      cpu: "1024m"
+      memory: "4Gi"
+    limits:
+      cpu: "4096m"
+      memory: "8Gi"
+  javaOpts: "-Xms4000m -Xmx4000m"
+  servicePort: 80
+  serviceType: LoadBalancer
+agent:
+  Enabled: false
+rbac:
+  create: true
+serviceAccount:
+  create: false
+  name: "jenkins"
+EOF
+```
+
+Now we’ll use the helm cli to create the Jenkins server as we’ve declared it in the values.yaml file.
+```
+helm install cicd stable/jenkins -f values.yaml
+```
+
+The output of this command will give you some additional information such as the admin password and the way to get the host name of the ELB that was provisioned.
+
+Let’s give this some time to provision and while we do let’s watch for pods to boot.
+```
+kubectl get pods -w
+```
+You should see the pods in init, pending or running state.
+
+Once this changes to running we can get the load balancer address.
+```
+export SERVICE_IP=$(kubectl get svc --namespace default cicd-jenkins --template "{{ range (index .status.loadBalancer.ingress 0) }}{{ . }}{{ end }}")
+
+echo http://$SERVICE_IP/login
+```
+This service was configured with a LoadBalancer so, an AWS Elastic Load Balancer (ELB) is launched by Kubernetes for the service. The EXTERNAL-IP column contains a value that ends with “elb.amazonaws.com” - the full value is the DNS address.
+
+When the front-end service is first deployed, it can take up to several minutes for the ELB to be created and DNS updated. During this time the link above may display a “site unreachable” message. To check if the instances are in service, follow this deep link to the load balancer console. On the load balancer select the instances tab and ensure that the instance status is listed as “InService” before proceeding to the jenkins login page.
+
+
+## Logging In
+Now that we have the ELB address of your jenkins instance we can go an navigate to that address in another window.
+
+![Cluster Creation Workflow](imgs/jenkins-login.png "Cluster Creation Workflow")
+From here we can log in using:
+
+|Username |	Password |
+|--------|-----------|
+|admin|	command from below|
+```
+printf $(kubectl get secret --namespace default cicd-jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 --decode);echo
+```
+
+The output of this command will give you the default password for your admin user. Log into the jenkins login screen using these credentials.
+
+## Setup Multibranch Projects
+After logging into the Jenkins web console, we’re ready to add our eksworkshop-app repository. Start by selecting New Item in the menu on the left side.
+
+![Cluster Creation Workflow](imgs/jenkins-newitem.png "Cluster Creation Workflow")
+
+Set the name of the item to codecommit and select the AWS Code commit item type.
+
+![Cluster Creation Workflow](imgs/jenkins-codecommititem.png "Cluster Creation Workflow")
+
+In your Cloud9 workspace, execute the following commands to get your Git username and password.
+```
+echo $GIT_USERNAME
+echo $GIT_PASSWORD
+```
+
+Back to Jenkins. In the Projects section, to the right of Code Commit Credentials, select Add then CodeCommit.
+
+![Cluster Creation Workflow](imgs/jenkins-new-credentials.png "Cluster Creation Workflow")
+
+Set the Username and Password to the corresponding values from the previous command and click Add.
+
+![Cluster Creation Workflow](imgs/jenkins-gitcredentials.png "Cluster Creation Workflow")
+
+Confirm your current AWS Region.
+
+```
+echo https://codecommit.$AWS_REGION.amazonaws.com
+```
+
+Copy that value to theURL field under project and select your use from the Code Commit Credentials DropDown menu.
+![Cluster Creation Workflow](imgs/jenkins-projectsetup.png "Cluster Creation Workflow")
+
+Select Save at the bottom left of the screen. Jenkins will begin executing the pipelines in repositories and branches that contain a Jenkinsfile.
+
+![Cluster Creation Workflow](imgs/jenkins-eksworkshop-app-master.png "Cluster Creation Workflow")
+
+## cleanup
+To uninstall Jenkins and cleanup the service account and CodeCommit repository run:
+```
+helm uninstall cicd
+
+aws codecommit delete-repository \
+    --repository-name eksworkshop-app
+
+aws iam detach-user-policy \
+    --user-name git-user \
+    --policy-arn arn:aws:iam::aws:policy/AWSCodeCommitPowerUser
+
+aws iam delete-service-specific-credential \
+    --user-name git-user \
+    --service-specific-credential-id $CREDENTIAL_ID
+
+aws iam delete-user \
+    --user-name git-user
+
+eksctl delete iamserviceaccount \
+    --name jenkins \
+    --namespace default \
+    --cluster eksworkshop-eksctl
+
+rm -rf ~/environment/eksworkshop-app
+rm ~/environment/values.yaml
+
+sudo pip uninstall -y git-remote-codecommit
+```
+
+
+# Continuous Delivery with Spinnaker
+[Spinnaker](https://spinnaker.io/concepts/) is an open-source, multi-cloud continuous delivery platform, originally developed by Netflix, that helps you release software changes rapidly and reliably. Development team can focus on just application development and leave ops provisioning to Spinnaker for automating reinforcement of business and regulatory requirements. Spinnaker supports several CI systems and build tools like CodeBuild, Jenkins. You can integrate Spinnaker for configuring Artifacts from Git, Amazon S3, Amazon ECR etc.
+
+In this module, we will focus on Application Deployment using Spinnaker:
+
+- How to install Spinnaker and configure Spinnaker services using Kubernetes Operator in EKS
+- Build simple Spinnaker CD pipeline
+  - Stage - Add Ngnix deployment artifact manifest
+  - Testing -
+    - Manually trigger the pipeline
+    - Test the deployment
+- Build Helm-based Spinnaker CD Pipeline
+  - Configuration
+    - Trigger: Continuous Delivery will be triggered automatically based on new image upload into ECR
+  - Stage 1 - Bake the manifest from GitHub repo for deployment using Helm
+  - Stage 2 - Deploy the Helm artifact to EKS
+  - Testing -
+    - Upload container image to ECR to trigger the deployment pipeline
+    - Test the deployment
+![Cluster Creation Workflow](imgs/architecture-s.png "Cluster Creation Workflow")
+
+## Spinnaker Overview
+### Spinnaker Architecture
+You can also see the detailed architecture of spinnaker at [Armory docs](https://docs.armory.io/docs/overview/architecture/).
+
+![Cluster Creation Workflow](imgs/architecture.png "Cluster Creation Workflow")
+
+- Deck: Browser-based UI for Spinnaker.
+
+- Gate: API callers and Spinnaker UI communicate to Spinnaker server via this API gateway called Gate.
+
+- Orca: Pipelines and other ad-hoc operations are managed by this orchestration engine called Orca.
+
+- Clouddriver: Indexing and Caching of deployed resources are taken care by Clouddriver. It also facilitates calls to cloud providers like AWS, GCE, and Azure.
+
+- Echo: It is responsible for sending notifications, it also acts as incoming webhook.
+
+- Igor: It is used to trigger pipelines via continuous integration jobs in systems like Jenkins and Travis CI, and it allows Jenkins/Travis stages to be used in pipelines.
+
+- Front50: It’s the metadata store of Spinnaker. It persists metadata for all resources which include pipelines, projects, applications and notifications.
+
+- Rosco: Rosco bakes machine images (AWS AMIs, Azure VM images, GCE images).
+
+- Rush: It is Spinnaker’s script excution engine.
+
+### Spinnaker Concepts
+Spinnaker provides two core sets of features:
+
+- Application management (a.k.a. infrastructure management) You use Spinnaker’s [application management](https://spinnaker.io/concepts/#application-management-aka-infrastructure-management) features to view and manage your cloud resources.
+
+- Application deployment You use Spinnaker’s application deployment features to construct and manage continuous delivery workflows.
+
+In this workshop, we are only focussing on Application Deployment so lets deep dive into this feature. More details on Spinnaker Nomenclature and Naming Conventions can be found at [Armory docs](https://docs.armory.io/docs/overview/naming-conventions/).
+
+- Pipeline: The pipeline is the key deployment management construct in Spinnaker. It consists of a sequence of actions, known as stages. You can pass parameters from stage to stage along the pipeline.
+
+![Cluster Creation Workflow](imgs/pipelines.png "Cluster Creation Workflow")
+
+- Stage: A Stage in Spinnaker is a collection of sequential Tasks and composed Stages that describe a higher-level action the Pipeline will perform either linearly or in parallel.
+
+- Task: A Task in Spinnaker is an automatic function to perform.
+
+- Deployment Strategies: Spinnaker treats cloud-native deployment strategies as first class constructs, handling the underlying orchestration such as verifying health checks, disabling old server groups and enabling new server groups. Spinnaker supports the red/black (a.k.a. blue/green) strategy, with rolling red/black and canary strategies in active development.
+
+## Install Spinnaker Operator
+There are several methods to install open source Spinnaker on EKS/Kubernetes:
+
+- [Halyard](https://spinnaker.io/setup/install/)
+- [Operator](https://github.com/armory/spinnaker-operator)
+- [Kleat](https://github.com/spinnaker/kleat) intended to replace Halyard (under active development)
+
+In this workshop we will be using Spinnaker Operator, a Kubernetes Operator for managing Spinnaker, built by Armory. The Operator makes managing Spinnaker, which runs in Kubernetes, dramatically simpler and more automated, while introducing new Kubernetes-native features. The current tool (Halyard) involved significant manual processes and requires Spinnaker domain expertise.
+
+In contrast, the Operator lets you treat Spinnaker as just another Kubernetes deployment, which makes installing and managing Spinnaker easy and reliable. The Operator unlocks the scalability of a GitOps workflow by defining Spinnaker configurations in a code repository rather than in hal commands.
+
+More details on the benefits of Sipnnaker Operator can be found in Armory Docs
+
+### PreRequisites
+- We assume that we have an existing EKS Cluster eksworkshop-eksctl created from this workshop.
+
+- We also assume that we have increased the disk size on your Cloud9 instance as we need to build docker images for our application.
+
+- [Optional] If you want to use AWS Console to navigate and explore resources in Amazon EKS ensure that you have completed Console Credentials to get full access to the EKS Cluster in the EKS console.
+
+- We also have installed the prequisite for EKS Cluster installation
+
+- And we have also validated the IAM role in use by the Cloud9 IDE
+
+- Ensure you are getting the IAM role that you have attached to Cloud9 IDE when you execute the below command
+```
+aws sts get-caller-identity
+```
+```
+
+{
+	"Account": "XXXXXXX",
+	"UserId": "YYYYYYYY:i-009b2d423b1386a74",
+	"Arn": "arn:aws:sts::XXXXXXX:assumed-role/eksworkshop-admin-s/i-009b2d423b1386a74"
+}
+```
+
+- Check if AWS_REGION and ACCOUNT_ID are set correctly
+```
+test -n "$AWS_REGION" && echo AWS_REGION is "$AWS_REGION" || echo AWS_REGION is not set
+test -n "$ACCOUNT_ID" && echo ACCOUNT_ID is "$ACCOUNT_ID" || echo ACCOUNT_ID is not set
+```
+
+If not, export the ACCOUNT_ID and AWS_REGION to ENV
+
+```
+export ACCOUNT_ID=<your_account_id>
+export AWS_REGION=<your_aws_region>
+```
+
+### EKS cluster setup
+We need bigger instance type for installing spinnaker services, hence we are creating new EKS cluster.
+
+We are also deleting the existng nodegroup nodegroup that was created as part of cluster creation as we need Spinnaker Operator to create the services in the new nodegroup spinnaker
+```
+cat << EOF > spinnakerworkshop.yaml
+---
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: eksworkshop-eksctl
+  region: ${AWS_REGION}
+
+# https://eksctl.io/usage/eks-managed-nodegroups/
+managedNodeGroups:
+  - name: spinnaker
+    minSize: 2
+    maxSize: 3
+    desiredCapacity: 3
+    instanceType: m5.large
+    ssh:
+      enableSsm: true
+    volumeSize: 20
+    labels: {role: spinnaker}
+    tags:
+      nodegroup-role: spinnaker
+EOF
+
+eksctl create nodegroup -f spinnakerworkshop.yaml
+eksctl delete nodegroup --cluster=eksworkshop-eksctl --name=nodegroup
+```
+
+```
+.....
+.....
+.....
+2021-05-20 16:45:15 [ℹ]  waiting for at least 2 node(s) to become ready in "spinnaker"
+2021-05-20 16:45:15 [ℹ]  nodegroup "spinnaker" has 3 node(s)
+2021-05-20 16:45:15 [ℹ]  node "ip-192-y-x-184.${AWS_REGION}.compute.internal" is ready
+2021-05-20 16:45:15 [ℹ]  node "ip-192-y-x-128.${AWS_REGION}.compute.internal" is ready
+2021-05-20 16:45:15 [ℹ]  node "ip-192-y-x-105.${AWS_REGION}.compute.internal" is ready
+2021-05-20 16:45:15 [✔]  created 1 managed nodegroup(s) in cluster "eksworkshop-eksctl"
+2021-05-20 16:45:16 [ℹ]  checking security group configuration for all nodegroups
+2021-05-20 16:45:16 [ℹ]  all nodegroups have up-to-date configuration
+```
+Confirm the setup
+```
+kubectl get nodes
+```
+```
+NAME                                           STATUS   ROLES    AGE     VERSION
+ip-192-y-x-184.${AWS_REGION}.compute.internal   Ready    <none>   4m45s   v1.17.12-eks-7684af
+ip-192-y-x-128.${AWS_REGION}.compute.internal   Ready    <none>   4m37s   v1.17.12-eks-7684af
+ip-192-y-x-105.${AWS_REGION}.compute.internal    Ready    <none>   4m47s   v1.17.12-eks-7684afå
+```
+
+### Install Spinnaker CRDs
+Pick a release from https://github.com/armory/spinnaker-operator/releases and export that version. Below we are using the latest release of Spinnaker Operator when this workshop was written,
+```
+export VERSION=1.2.4
+echo $VERSION
+
+mkdir -p spinnaker-operator && cd spinnaker-operator
+bash -c "curl -L https://github.com/armory/spinnaker-operator/releases/download/v${VERSION}/manifests.tgz | tar -xz"
+kubectl apply -f deploy/crds/
+```
+
+```
+1.2.4
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   621  100   621    0     0   2700      0 --:--:-- --:--:-- --:--:--  2688
+100 11225  100 11225    0     0  29080      0 --:--:-- --:--:-- --:--:-- 29080
+customresourcedefinition.apiextensions.k8s.io/spinnakeraccounts.spinnaker.io created
+customresourcedefinition.apiextensions.k8s.io/spinnakerservices.spinnaker.io created
+```
+
+### Install Spinnaker Operator
+Install operator in namespace spinnaker-operator. We have used Cluster mode for the operator that works across namespaces and requires a ClusterRole to perform validation.
+```
+kubectl create ns spinnaker-operator
+kubectl -n spinnaker-operator apply -f deploy/operator/cluster
+```
+
+```
+namespace/spinnaker-operator created
+deployment.apps/spinnaker-operator created
+clusterrole.rbac.authorization.k8s.io/spinnaker-operator-role created
+clusterrolebinding.rbac.authorization.k8s.io/spinnaker-operator-binding created
+serviceaccount/spinnaker-operator created
+```
+
+Make sure the Spinnaker-Operator pod is running
+
+This may take couple of minutes
+```
+kubectl get pod -n spinnaker-operator
+```
+
+```
+NAME                                  READY   STATUS    RESTARTS   AGE
+spinnaker-operator-6d95f9b567-tcq4w   2/2     Running   0          82s
+```
+
+## Artifact Configuration
+Lets configure all the artifacts and storage for Spinnaker services that we will need for our usecase. We will adding all the configuration to the file located at deploy/spinnaker/basic/spinnakerservice.yml which got created by Spinnaker Operator install in previous module.
+
+### Configure Spinnaker Release Version
+Pick a release from https://spinnaker.io/community/releases/versions/ and export that version. Below we are using the latest Spinnaker release when this workshop was written,
+```
+export SPINNAKER_VERSION=1.25.4
+```
+
+Open the SpinnakerService manifest located at deploy/spinnaker/basic/spinnakerservice.yml, and change below for Spinnaker Version
+
+```
+  version: $SPINNAKER_VERSION   # the version of Spinnaker to be deployed
+```
+
+### Configure S3 Artifact
+We will configure Spinnaker to access an bucket as a source of artifacts. Spinnaker stages such as a Deploy Manifest read configuration from S3 files directly. Lets enable S3 as an artifact source.
+
+Spinnaker requires an external storage provider for persisting our Application settings and configured Pipelines. In this workshop we will be using S3 as a storage source means that Spinnaker will store all of its persistent data in a Bucket.
+
+- Create S3 Bucket first
+
+You can create S3 bucket either using Admin Console or using AWS CLI (Use one of the option from below)
+
+- Using Admin Console
+
+Go to AWS Console »> S3 and create the bucket as below
+![Cluster Creation Workflow](imgs/s3bucket.png "Cluster Creation Workflow")
+![Cluster Creation Workflow](imgs/s3bucketdetail.png "Cluster Creation Workflow")
+
+- Using AWS CLI
+```
+export S3_BUCKET=spinnaker-workshop-$(cat /dev/urandom | LC_ALL=C tr -dc "[:alpha:]" | tr '[:upper:]' '[:lower:]' | head -c 10)
+aws s3 mb s3://$S3_BUCKET
+aws s3api put-public-access-block \
+--bucket $S3_BUCKET \
+--public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+echo $S3_BUCKET
+```
+### Set up environment variables
+
+AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are the AWS profile credentials for the user who has created the above S3 bucket.
+
+```
+export S3_BUCKET=<your_s3_bucket>
+export AWS_ACCESS_KEY_ID=<your_access_key>
+export AWS_SECRET_ACCESS_KEY=<your_secret_access_key>
+```
+
+### Configure persistentStorage
+Open the SpinnakerService manifest located at deploy/spinnaker/basic/spinnakerservice.yml, then update the section spec.spinnakerConfig.config as below.
+
+```
+  persistentStorage:
+    persistentStoreType: s3
+    s3:
+      bucket: $S3_BUCKET
+      rootFolder: front50
+      region: $AWS_REGION
+      accessKeyId: $AWS_ACCESS_KEY_ID
+      secretAccessKey: $AWS_SECRET_ACCESS_KEY
+```
+
+### Configure ECR Artifact
+Amazon ECR requires access tokens to access the images and those access tokens expire after a time. In order to automate updating the token, use a sidecar container with a script that does it for you. Since both Clouddriver and the sidecar container need access to the ECR access token, we will use a shared volume to store the access token.
+
+The sidecar needs to be able to request an access token from ECR. The Spinnaker installation must have the AmazonEC2ContainerRegistryReadOnly policy attached to the role assigned in order to request and update the required access token.
+
+- Create ECR Repository
+Clone Application Git Repo
+```
+cd ~/environment
+git clone https://github.com/aws-containers/eks-microservice-demo.git
+cd eks-microservice-demo
+```
+
+We need to push a test container image to the newly created ECR repository. The resaon being, empty ECR respository does not show up in the Spinnaker UI when we set up the trigger in pipeline.
+```
+export ECR_REPOSITORY=eks-microservice-demo/test
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+aws ecr describe-repositories --repository-name $ECR_REPOSITORY >/dev/null 2>&1 || \
+  aws ecr create-repository --repository-name $ECR_REPOSITORY >/dev/null
+TARGET=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+docker build -t $TARGET apps/detail
+docker push $TARGET
+```
+
+### Create a configmap
+Below we are creating the spinnaker namespace where all the Spinnaker services will be deployed and also creating configmap for ECR token.
+```
+kubectl create ns spinnaker
+
+cat << EOF > config.yaml
+interval: 30m # defines refresh interval
+registries: # list of registries to refresh
+  - registryId: "$ACCOUNT_ID"
+    region: "$AWS_REGION"
+    passwordFile: "/etc/passwords/my-ecr-registry.pass"
+EOF
+
+kubectl -n spinnaker create configmap token-refresh-config --from-file config.yaml
+```
+```
+namespace/spinnaker created
+configmap/token-refresh-config created
+```
+
+Confirm if configmap is created correctly
+```
+kubectl describe configmap token-refresh-config -n spinnaker
+```
+
+### Add a sidecar for token refresh
+Open the SpinnakerService manifest located under deploy/spinnaker/basic/spinnakerservice.yml, then add the below snippet under spec.spinnakerConfig.config.
+```
+
+      deploymentEnvironment:
+        sidecars:
+          spin-clouddriver:
+          - name: token-refresh
+            dockerImage: quay.io/skuid/ecr-token-refresh:latest
+            mountPath: /etc/passwords
+            configMapVolumeMounts:
+            - configMapName: token-refresh-config
+              mountPath: /opt/config/ecr-token-refresh
+
+```
+
+Define an ECR Registry
+Open the SpinnakerService manifest located under deploy/spinnaker/basic/spinnakerservice.yml, then add the below section under spec.spinnakerConfig.
+```
+
+      profiles:
+        clouddriver:
+          dockerRegistry:
+            enabled: true
+            primaryAccount: my-ecr-registry
+            accounts:
+            - name: my-ecr-registry
+              address: https://$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+              username: AWS
+              passwordFile: /etc/passwords/my-ecr-registry.pass
+              trackDigests: true
+              repositories:
+              - $ECR_REPOSITORY
+```
+
+Configure Igor
+Igor is a is a wrapper API that provides a single point of integration with Continuous Integration (CI) and Source Control Management (SCM) services for Spinnaker. It is responsible for kicking-off jobs and reporting the state of running or completing jobs.
+
+Clouddriver can be configured to poll the ECR registries. When that is the case, igor can then create a poller that will list the registries indexed by clouddriver, check each one for new images and submit events to echo (hence allowing Docker triggers)
+
+Open the SpinnakerService manifest located under deploy/spinnaker/basic/spinnakerservice.yml, then add the below section to spec.spinnakerConfig.profiles.
+```
+
+      igor:
+        docker-registry:
+          enabled: true
+
+```
+
+Add GitHub Repository
+Set up environment variables
+```
+export GITHUB_USER=<your_github_username>
+export GITHUB_TOKEN=<your_github_accesstoken>
+```
+Configure GitHub
+To access a GitHub repo as a source of artifacts. If you actually want to use a file from the GitHub commit in your pipeline, you’ll need to configure GitHub as an artifact source in Spinnaker.
+
+Open the SpinnakerService manifest located under deploy/spinnaker/basic/spinnakerservice.yml, then add the below under section spec.spinnakerConfig.config.
+```
+
+      features:
+        artifacts: true
+      artifacts:
+        github:
+          enabled: true
+          accounts:
+          - name: $GITHUB_USER
+            token: $GITHUB_TOKEN  # GitHub's personal access token. This fields supports `encrypted` references to secrets.
+
+```
+
+## Add EKS Account
+At a high level, Spinnaker operates in the following way when deploying to Kubernetes:
+
+- Spinnaker is configured with one or more “Cloud Provider” Kubernetes accounts (which you can think of as deployment targets)
+- For each Kubernetes account, Spinnaker is provided a kubeconfig to connect to that Kubernetes cluster
+- The kubeconfig should have the following contents:
+  - A Kubernetes kubeconfig cluster
+  - A Kubernetes kubeconfig user
+  - A Kubernetes kubeconfig context
+  - Metadata such as which context to use by default
+- Each Kubernetes account is configured in the SpinnakerService manifest under spec.spinnakerConfig.config.providers.kubernetes.accounts key. Each entity   has these (and other) fields:
+  - name: A Spinnaker-internal name
+  - kubeconfigFile: A file path referencing the contents of the kubeconfig file for connecting to the target cluster.
+  - onlySpinnakerManaged: When true, Spinnaker only caches and displays applications that have been created by Spinnaker.
+  - namespaces: An array of namespaces that Spinnaker will be allowed to deploy to. If this is left blank, Spinnaker will be allowed to deploy to all namespaces
+  - omitNamespaces: If namespaces is left blank, you can blacklist specific namespaces to indicate to Spinnaker that it should not deploy to those namespaces
+- If the kubeconfig is properly referenced and available, Operator will take care of the following:
+  - Creating a Kubernetes secret containing your kubeconfig in the namespace where Spinnaker lives
+  - Dynamically generating a clouddriver.yml file that properly references the kubeconfig from where it is mounted within the Clouddriver container
+  - Creating/Updating the Kubernetes Deployment (spin-clouddriver) which runs Clouddriver so that it is aware of the secret and properly mounts it in the Clouddriver pod
+Now, lets add a Kubernetes/EKS Account Deployment Target in Spinnaker.
+
+### Download the latest spinnaker-tools release
+This tool helps to create the ServiceAccount, ClusterRoleBinding, kubeconfig for the service account for the EKS/Kubernetes account
+```
+cd ~/environment
+git clone https://github.com/armory/spinnaker-tools.git
+cd spinnaker-tools
+go mod download all
+go build
+```
+```
+Cloning into 'spinnaker-tools'...
+remote: Enumerating objects: 278, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 278 (delta 0), reused 4 (delta 0), pack-reused 272
+Receiving objects: 100% (278/278), 84.72 KiB | 4.71 MiB/s, done.
+Resolving deltas: 100% (124/124), done.
+```
+
+### Setup environment variables
+```
+export CONTEXT=$(kubectl config current-context)
+export SOURCE_KUBECONFIG=${HOME}/.kube/config
+export SPINNAKER_NAMESPACE="spinnaker"
+export SPINNAKER_SERVICE_ACCOUNT_NAME="spinnaker-ws-sa"
+export DEST_KUBECONFIG=${HOME}/Kubeconfig-ws-sa
+
+echo $CONTEXT
+echo $SOURCE_KUBECONFIG
+echo $SPINNAKER_NAMESPACE
+echo $SPINNAKER_SERVICE_ACCOUNT_NAME
+echo $DEST_KUBECONFIG
+```
+
+If you do not see output from the above command for all the above Environment Variables, do not proceed to next step
+
+### Create the service account
+Create the kubernetes service account with namespace-specific permissions
+```
+./spinnaker-tools create-service-account   --kubeconfig ${SOURCE_KUBECONFIG}   --context ${CONTEXT}   --output ${DEST_KUBECONFIG}   --namespace ${SPINNAKER_NAMESPACE}   --service-account-name ${SPINNAKER_SERVICE_ACCOUNT_NAME}
+```
+```
+
+Cloning into 'spinnaker-tools'...
+remote: Enumerating objects: 278, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (6/6), done.
+remote: Total 278 (delta 0), reused 4 (delta 0), pack-reused 272
+Receiving objects: 100% (278/278), 84.72 KiB | 4.71 MiB/s, done.
+Resolving deltas: 100% (124/124), done.
+
+Getting namespaces ...
+Creating service account spinnaker-ws-sa ...
+Created ServiceAccount spinnaker-ws-sa in namespace spinnaker
+Adding cluster-admin binding to service account spinnaker-ws-sa ...
+Created ClusterRoleBinding spinnaker-spinnaker-ws-sa-admin in namespace spinnaker
+Getting token for service account ...
+Cloning kubeconfig ...
+Renaming context in kubeconfig ...
+Switching context in kubeconfig ...
+Creating token user in kubeconfig ...
+Updating context to use token user in kubeconfig ...
+Updating context with namespace in kubeconfig ...
+Minifying kubeconfig ...
+Deleting temp kubeconfig ...
+Created kubeconfig file at /home/ec2-user/Kubeconfig-ws-sa
+```
+### Configure EKS Account
+Open the SpinnakerService manifest located under deploy/spinnaker/basic/spinnakerservice.yml, then add the below to the section spec.spinnakerConfig.config.
+```
+
+        providers:
+            dockerRegistry:
+              enabled: true
+            kubernetes:
+              enabled: true
+              accounts:
+              - name: spinnaker-workshop
+                requiredGroupMembership: []
+                providerVersion: V2
+                permissions:
+                dockerRegistries:
+                  - accountName: my-ecr-registry
+                configureImagePullSecrets: true
+                cacheThreads: 1
+                namespaces: [spinnaker,detail]
+                omitNamespaces: []
+                kinds: []
+                omitKinds: []
+                customResources: []
+                cachingPolicies: []
+                oAuthScopes: []
+                onlySpinnakerManaged: false
+                kubeconfigFile: kubeconfig-sp  # File name must match "files" key
+              primaryAccount: spinnaker-workshop  # Change to a desired account from the accounts array
+
+```
+Open the SpinnakerService manifest located under deploy/spinnaker/basic/spinnakerservice.yml, then add the below section under spec.spinnakerConfig. Replace the <FILE CONTENTS HERE> in below section with kubeconfig file content created from previous step from the location ${HOME}/Kubeconfig-ws-sa.
+```
+
+    files:
+        kubeconfig-sp: |
+           <FILE CONTENTS HERE> # Content from kubeconfig created by Spinnaker Tool
+
+```
+Congratulations! You are done with the Spinnaker configuration for all the Spinnaker services! Lets install Spinnaker now.
+
+## Install Spinnaker
+By now we have completed our configuration for Spinnaker and the SpinnakerService manifest located at deploy/spinnaker/basic/spinnakerservice.yml should look like below:
+```
+
+apiVersion: spinnaker.io/v1alpha2
+kind: SpinnakerService
+metadata:
+  name: spinnaker
+spec:
+  spinnakerConfig:
+    config:
+      version: $SPINNAKER_VERSION   # the version of Spinnaker to be deployed
+      persistentStorage:
+        persistentStoreType: s3
+        s3:
+          bucket: $S3_BUCKET
+          rootFolder: front50
+          region: $AWS_REGION
+          accessKeyId: $AWS_ACCESS_KEY_ID
+          secretAccessKey: $AWS_SECRET_ACCESS_KEY
+      deploymentEnvironment:
+        sidecars:
+          spin-clouddriver:
+          - name: token-refresh
+            dockerImage: quay.io/skuid/ecr-token-refresh:latest
+            mountPath: /etc/passwords
+            configMapVolumeMounts:
+            - configMapName: token-refresh-config
+              mountPath: /opt/config/ecr-token-refresh
+      features:
+        artifacts: true
+      artifacts:
+        github:
+          enabled: true
+          accounts:
+          - name: $GITHUB_USER
+            token: $GITHUB_TOKEN  # GitHub's personal access token. This fields supports `encrypted` references to secrets.
+      providers:
+          dockerRegistry:
+            enabled: true
+          kubernetes:
+            enabled: true
+            accounts:
+            - name: spinnaker-workshop
+              requiredGroupMembership: []
+              providerVersion: V2
+              permissions:
+              dockerRegistries:
+                - accountName: my-ecr-registry
+              configureImagePullSecrets: true
+              cacheThreads: 1
+              namespaces: [spinnaker,detail]
+              omitNamespaces: []
+              kinds: []
+              omitKinds: []
+              customResources: []
+              cachingPolicies: []
+              oAuthScopes: []
+              onlySpinnakerManaged: false
+              kubeconfigFile: kubeconfig-sp  # File name must match "files" key
+            primaryAccount: spinnaker-workshop  # Change to a desired account from the accounts array
+    profiles:
+        clouddriver:
+          dockerRegistry:
+            enabled: true
+            primaryAccount: my-ecr-registry
+            accounts:
+            - name: my-ecr-registry
+              address: https://$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+              username: AWS
+              passwordFile: /etc/passwords/my-ecr-registry.pass
+              trackDigests: true
+              repositories:
+              - $ECR_REPOSITORY
+        igor:
+          docker-registry:
+            enabled: true
+    files:
+        kubeconfig-sp: |
+          <FILE CONTENTS HERE> # Content from kubeconfig created by Spinnaker Tool
+  # spec.expose - This section defines how Spinnaker should be publicly exposed
+  expose:
+    type: service  # Kubernetes LoadBalancer type (service/ingress), note: only "service" is supported for now
+    service:
+      type: LoadBalancer
+```
+
+### Install Spinnaker Service
+Confirm if all the environment variables is set correctly
+```
+echo $ACCOUNT_ID
+echo $AWS_REGION
+echo $SPINNAKER_VERSION
+echo $GITHUB_USER
+echo $GITHUB_TOKEN
+echo $S3_BUCKET
+echo $AWS_ACCESS_KEY_ID
+echo $AWS_SECRET_ACCESS_KEY
+echo $ECR_REPOSITORY
+```
+
+If you do not see output from the above command for all the Environment Variables, do not proceed to next step
+```
+cd ~/environment/spinnaker-operator/
+envsubst < deploy/spinnaker/basic/spinnakerservice.yml | kubectl -n spinnaker apply -f -
+```
+```
+spinnakerservice.spinnaker.io/spinnaker created
+```
+
+It will take some time to bring up all the pods, so wait for few minutes..
+```
+ # Get all the resources created
+kubectl get svc,pod -n spinnaker
+```
+
+```
+NAME                       TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)        AGE
+service/spin-clouddriver   ClusterIP      10.1x0.xx.71    <none>                                                                    7002/TCP       8d
+service/spin-deck          LoadBalancer   10.1x0.yy.xx    ae33c1a7185b14yyyy-1275091989.us-east-2.elb.amazonaws.com   80:32392/TCP   8d
+service/spin-echo          ClusterIP      10.1x0.54.127    <none>                                                                    8089/TCP       8d
+service/spin-front50       ClusterIP      10.1x0.xx.241   <none>                                                                    8080/TCP       8d
+service/spin-gate          LoadBalancer   10.1x0.75.xx    ac3a38db81ebXXXX-1555475316.us-east-2.elb.amazonaws.com   80:32208/TCP   8d
+service/spin-igor          ClusterIP      10.1x0.yy.xx    <none>                                                                    8088/TCP       8d
+service/spin-orca          ClusterIP      10.xx.64.yy    <none>                                                                    8083/TCP       8d
+service/spin-redis         ClusterIP      10.1x0.xx.242    <none>                                                                    6379/TCP       1x0
+service/spin-rosco         ClusterIP      10.1x0.yy.xx   <none>                                                                    8087/TCP       8d
+
+NAME                                    READY   STATUS    RESTARTS   AGE
+pod/spin-clouddriver-7c5dbf658b-spl64   2/2     Running   0          8d
+pod/spin-deck-7f785d675f-2q4q8          1/1     Running   0          8d
+pod/spin-echo-d9b7799b4-4wjnn           1/1     Running   0          8d
+pod/spin-front50-76d9f8bd58-n96sl       1/1     Running   0          8d
+pod/spin-gate-7f48c76b55-bpc22          1/1     Running   0          8d
+pod/spin-igor-5c98f5b46f-mcmvs          1/1     Running   0          8d
+pod/spin-orca-6bd7c69f-mml4c            1/1     Running   0          8d
+pod/spin-redis-7f7d9659bf-whkf7         1/1     Running   0          8d
+pod/spin-rosco-7c6f77c64c-2qztw         1/1     Running   0          8d
+```
+```
+
+# Watch the install progress.
+kubectl -n spinnaker get spinsvc spinnaker -w
+```
+```
+NAME        VERSION   LASTCONFIGURED   STATUS   SERVICES   URL
+spinnaker   1.24.0    3h8m             OK       9          http://ae33c1a7185b1402mmmmm-1275091989.us-east-2.elb.amazonaws.com
+```
+
+### Test the setup on Spinnaker UI
+Access Spinakker UI
+
+Grab the load balancer url from the previous step, and load into the browser, you should see the below Spinnaker UI
+![Cluster Creation Workflow](imgs/ui.png "Cluster Creation Workflow
+
+### Create a test application
+Click on Create Application and enter details.
+![Cluster Creation Workflow](imgs/application.png "Cluster Creation Workflow")
+
+### Create a test pipeline
+Click on Pipelines under test-application and click on Configure a new pipeline and add the name.
+![Cluster Creation Workflow](imgs/pipeline.png "Cluster Creation Workflow")
+
+Click on Add Stage and select Deploy (Manifest) from the dropdown for Type, select spinnaker-workshop from the dropdown for Account and put the below yaml into the Manifest text area and click on “Save Changes”.
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+```
+![Cluster Creation Workflow](imgs/manifest1.png "Cluster Creation Workflow")
+
+In the Spinnaker UI, Go to Pipelines and click on Start Manual Execution
+
+![Cluster Creation Workflow](imgs/manual.png "Cluster Creation Workflow")
+
+You will see the pipeline getting triggered and is in progress
+
+![Cluster Creation Workflow](imgs/step2.png "Cluster Creation Workflow")
+
+After few seconds, the pipleine is successful
+![Cluster Creation Workflow](imgs/step3.png "Cluster Creation Workflow")
+
+Clicking on execution details you can see the detail of deployment
+![Cluster Creation Workflow](imgs/details.png "Cluster Creation Workflow")
+![Cluster Creation Workflow](imgs/details1.png "Cluster Creation Workflow")
+![Cluster Creation Workflow](imgs/details2.png "Cluster Creation Workflow")
+
+Go to Clusters and verify the deployment
+![Cluster Creation Workflow](imgs/deploy.png "Cluster Creation Workflow")
+![Cluster Creation Workflow](imgs/deploy2.png "Cluster Creation Workflow")
+
+You can also go to Cloud9 terminal and verify the deployment
+```
+kubectl get deployment nginx-deployment -n spinnaker
+
+kubectl get pods -l app=nginx -n spinnaker
+```
+
+```
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   1/1     1            1           108s
+
+NAME                               READY   STATUS    RESTARTS   AGE
+nginx-deployment-6dc677db6-jchq8   1/1     Running   0          3m25s
+
+```
+
+Congratulations! You have successfully installed Spinnaker and created a test pipeline in Spinnaker and deployed the ngnix manifest to EKS cluster.
+
+## Testing Helm-based Pipeline
+Now lets deploy Helm Based Application to EKS using Spinnaker pipeline.
+
+### Spinnaker UI
+#### Create application
+Click on Create Application and enter details as Product-Detail
+
+![Cluster Creation Workflow](imgs/proddetail.png "Cluster Creation Workflow")
+
+#### Create Pipeline
+Click on Pipelines under Product-Detail and click on Configure a new pipeline and add the name as below.
+
+![Cluster Creation Workflow](imgs/helmpipeline.png "Cluster Creation Workflow")
+
+#### Setup Trigger
+Click on Configuration under Pipelines and click on Add Trigger. This is the ECR registry we had setup in Spinnaker manifest in Configure Artifact module. Follow the below setup and click on “Save Changes”.
+
+![Cluster Creation Workflow](imgs/trigger.png "Cluster Creation Workflow")
+
+#### Setup Bake Stage
+- Click on Add Stage and select Bake Manifest for Type from the dropdown
+
+- Select “Helm3” as Render Engine and enter name.
+
+- Select “Define a new artifact” for Expected Artifact and select your Git account that shows in dropdown. This is the Git account we had setup in Spinnaker manifest in Configure Artifact module. And then enter the below git location in the Content URL and add main as the Commit/Branch. This is to provide the the Helm template for the deployment.
+
+https://api.github.com/repos/aws-containers/eks-microservice-demo/contents/spinnaker/proddetail-0.1.0.tgz
+
+- Under the Overrides section, Select “create new artifact” for Expected Artifact and select your Git account that shows in dropdown. This is the Git account we had setup in Spinnaker manifest in Configure Artifact module. And then enter the below git location in the Content URL and add main as the Commit/Branch. This is to provide the overrides for the Helm template using values.yaml.
+
+https://api.github.com/repos/aws-containers/eks-microservice-demo/contents/spinnaker/helm-chart/values.yaml
+
+![Cluster Creation Workflow](imgs/bake.png "Cluster Creation Workflow")
+
+- Edit the Produces Artifact and change the name to helm-produced-artifact and click on Save Changes.
+![Cluster Creation Workflow](imgs/bake2.png "Cluster Creation Workflow")
+
+![Cluster Creation Workflow](imgs/bake3.png "Cluster Creation Workflow")
+
+### Setup Deploy Stage
+- Click on Add Stage and select Deploy (Manifest) from the dropdown for Type, and give a name as Bake proddetail.
+- Select Type as spinnaker-workshop from the dropdown for Account. This is the EKS account we had setup in Spinnaker manifest in Add EKS Account module.
+- Select helm-produced-artifact from the dropdown for Manifest Artifact and click on Save Changes.
+
+
+![Cluster Creation Workflow](imgs/bake3_1.png "Cluster Creation Workflow")
+
+### Test Deployment
+Push new container image to ECR for testing trigger
+To ensure that the ECR trigger will work in Spinnaker UI:
+
+- First change the content of the file to generate a new docker image digest. ECR trigger in Spinnaker does not work for same docker image digest. Go to ~/environment/eks-microservice-demo/apps/detail/app.js and add a comment to first line of the file like below
+// commenting for file for docker image generation
+Ensure that the image tag (APP_VERSION) you are adding below does not exist in the ECR repository eks-microservice-demo/test otherwise the trigger will not work. Spinnaker pipeline only triggers when a new version of image is added to ECR.
+
+And then run the below command in Cloud9 terminal.
+```
+cd ~/environment/eks-microservice-demo
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+export APP_VERSION=1.0
+export ECR_REPOSITORY=eks-microservice-demo/test
+TARGET=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:$APP_VERSION
+docker build -t $TARGET apps/detail --no-cache
+docker push $TARGET
+```
+
+Building/Pushing Container images first time to ECR may take around 3-5 minutes
+
+Watch Pipleline getting triggered
+
+![Cluster Creation Workflow](imgs/test.png "Cluster Creation Workflow")
+
+You will see that docker push triggers a deployment in the pipeline.
+![Cluster Creation Workflow](imgs/test2.png "Cluster Creation Workflow")
+![Cluster Creation Workflow](imgs/test3.png "Cluster Creation Workflow")
+
+Below are the Execution Details of pipeline
+![Cluster Creation Workflow](imgs/test4.png "Cluster Creation Workflow")
+![Cluster Creation Workflow](imgs/test5.png "Cluster Creation Workflow")
+
+### Get deploymet details
+You can see the deployment of frontend and detail service below.
+![Cluster Creation Workflow](imgs/hdeploy1.png "Cluster Creation Workflow")
+
+Click on the LoadBalancer link below and paste it on browser like http://a991d7csdsdsdsdsdsds-1949669176.XXXXX.elb.amazonaws.com:9000/
+![Cluster Creation Workflow](imgs/hdeploy2.png "Cluster Creation Workflow")
+
+You should see the service up and running as below.
+![Cluster Creation Workflow](imgs/hdeploy3.png "Cluster Creation Workflow")
+
+
+You can also go to Cloud9 terminal and confirm the deployment details
+```
+	kubectl get all -n detail
+	NAME                                   READY   STATUS    RESTARTS   AGE
+	pod/frontend-677dd7d654-nzxbq          1/1     Running   0          152m
+	pod/nginx-deployment-6dc677db6-jchq8   1/1     Running   0          22h
+	pod/proddetail-65cf5d598c-h9l7s        1/1     Running   0          152m
+
+	NAME                 TYPE           CLUSTER-IP      EXTERNAL-IP                                                               PORT(S)          AGE
+	service/frontend     LoadBalancer   10.100.73.76    a991d7csdsdsdsdsdsds-1949669176.XXXXX.elb.amazonaws.com   9000:30229/TCP   152m
+	service/proddetail   ClusterIP      10.100.37.158   <none>                                                                    3000/TCP         152m
+
+	NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
+	deployment.apps/frontend           1/1     1            1           152m
+	deployment.apps/nginx-deployment   1/1     1            1           22h
+	deployment.apps/proddetail         1/1     1            1           152m
+
+	NAME                                         DESIRED   CURRENT   READY   AGE
+	replicaset.apps/frontend-677dd7d654          1         1         1       152m
+	replicaset.apps/nginx-deployment-6dc677db6   1         1         1       22h
+	replicaset.apps/proddetail-65cf5d598c        1         1         1       152m
+
+```
+
+## cleanup
+### Delete Spinnaker artifacts
+Namespace deletion may take few minutes, please wait till the process completes.
+```
+for i in $(kubectl get crd | grep spinnaker | cut -d" " -f1) ; do
+kubectl delete crd $i
+done
+
+kubectl delete ns spinnaker-operator
+
+kubectl delete ns spinnaker
+
+kubectl delete ns detail
+```
+### (Optional) Create Old Nodegroup
+In case you have existing workloads to evit to this nodegroup before we delete the nodegroup created for this module
+
+Nodegroup creation will take few minutes.
+```
+eksctl create nodegroup --cluster=eksworkshop-eksctl --name=nodegroup --nodes=3 --node-type=t3.small --enable-ssm --managed
+```
+
+### Delete Nodegroup
+```
+eksctl delete nodegroup --cluster=eksworkshop-eksctl --name=spinnaker
+```
+
+
+# Patching/Upgrading Your EKS Cluster
+As EKS tracks upstream Kubernetes that means that customers can, and should, regularly upgrade their EKS so as to stay within the project’s upstream support window. This used to be the current version and two version back (n-2) - but it was [recently extended to three versions back (n-3)](https://kubernetes.io/blog/2020/08/31/kubernetes-1-19-feature-one-year-support/).
+
+There is a new major version of Kubernetes every quarter which means that the Kubernetes support window has now gone from three quarters of a year to one full year.
+
+In addition to upgrades to Kuberentes, there are other related upgrades to think about with your cluster as well:
+
+- The Amazon Machine Image (AMI) of your Nodes - including not just the portion of Kubernetes that is part of the image, the kubelet, but everything else there (OS, containerd, etc.). The control plane always supports managing kubelets that are one version behind itself (n-1) to help facilitate this upgrade.
+- The foundational DaemonSets that are on deployed onto every EKS cluster (kube-proxy, CoreDNS and the AWS CNI) which may need to be upgraded as you upgrade Kubernetes. [AWS documentation](https://docs.aws.amazon.com/eks/latest/userguide/update-cluster.html#w665aac14c15b5c17) tells you if this is required and which versions you should upgrade to.
+- And any Add-ons/Controllers/Drivers that you’ve added to extend Kubernetes and provide important cluster functionality may need to be upgraded as you upgrade Kuberentes
+In this module you’ll follow the AWS suggested process to upgrade your cluster from 1.20 to 1.21 including its Managed Node Group to get first-hand experience with this process and where EKS and Managed Node Groups help.
+
+## The Upgrade Process
+The process goes as follows:
+
+- (Optional) Check if the new version you are upgrading to has any API deprecations which will mean that you’ll need to change your YAML Spec files for them to continue to work on the new cluster. This is only the case with some version upgrades such as [1.15 to 1.16](https://kubernetes.io/blog/2019/07/18/api-deprecations-in-1-16/). There are various tools that can help with this such as [kube-no-trouble](https://github.com/doitintl/kube-no-trouble). Since there are not any such deprecations going from 1.20 to 1.21 we’ll skip this step here.
+- Run a kubectl get nodes and ensure that all of your Nodes are running the current version. Kubernetes can only support nodes that are one version behind meaning they all need to match the current Kubernetes version so when you upgrade the EKS control plane they’ll then only be one version behind. For Fargate relaunching a Pod (maybe by deleted it and letting the ReplicaSet replace it) will bring it in line with the current Kubernetes version.
+- Upgrade the EKS Control Plane to the new major version
+- Check if the core add-ons (kubeproxy, CoreDNS and the CNI) that ship with EKS require an upgrade to conincide with the major version upgrade. This will be in our upgrade documentation. If so follow that documentation to upgrade those. In this case (a 1.20 to 1.21 upgrade) the documentation says we’ll need to upgrade both CoreDNS and kubeproxy.
+- Upgrade any worker nodes so that the kubelet on them (which will now be one Kubernete major version behind) matches that of the EKS control plane. While you don’t have to do this immediatly it is a good idea to have the Nodes on the same version as the control plane as soon as is practical - plus it will make Step 2 easier the next time you have to upgrade. If you are using Managed Node Groups (as we are here) then EKS can help facilitate this with a safe automated process which orchestrates both the AWS and Kubernetes side of a rolling Node replacement/upgrade. If you are using Fargate then this will happen automatically the next time your Pods are replaced.
+
+## Upgrade EKS COntrol Plane
+The first step of this process is to upgrade the EKS Control Plane.
+
+Since we used eksctl to provision our cluster we’ll use that tool to do our upgrade as well.
+
+First we’ll run this command
+
+eksctl upgrade cluster --name=eksworkshop-eksctl
+You’ll see in the output that it found our cluster, worked out that it is 1.20 and the next version is 1.21 (you can only go to the next version with EKS) and that everything is ready for us to proceed with an upgrade.
+```
+eksctl upgrade cluster --name=eksworkshop-eksctl
+```
+```
+[ℹ]  eksctl version 0.66.0
+[ℹ]  using region us-west-2
+[ℹ]  (plan) would upgrade cluster "eksworkshop-eksctl" control plane from current version "1.20" to "1.21"
+[ℹ]  re-building cluster stack "eksctl-eksworkshop-eksctl-cluster"
+[✔]  all resources in cluster stack "eksctl-eksworkshop-eksctl-cluster" are up-to-date
+[ℹ]  checking security group configuration for all nodegroups
+[ℹ]  all nodegroups have up-to-date configuration
+[!]  no changes were applied, run again with '--approve' to apply the changes
+```
+
+We’ll run it again with an –approve appended to proceed
+```
+eksctl upgrade cluster --name=eksworkshop-eksctl --approve
+```
+This process should take approximately 25 minutes. You can continue to use the cluster during the control plane upgrade process but you might experience minor service interruptions. For example, if you attempt to connect to one of the EKS API servers just before or just after it’s terminated and replaced by a new API server running the new version of Kubernetes, you might experience temporary API call errors or connectivity issues. If this happens, retry your API operations until they succeed. Your existing Pods/workloads running in the data plane should not experience any interruption during the control plane upgrade.
+
+Given how long this step will take and that the cluster will continue to work maybe move on to other workshop modules until this process completes then come back to finish once it completes.
+
+## Upgrade EKS COre Add-ons
+When you provision an EKS cluster you get three add-ons that run on top of the cluster and that are required for it to function properly:
+
+- kubeproxy
+- CoreDNS
+- aws-node (AWS CNI or Network Plugin)
+Looking at the the [upgrade documentation](https://docs.aws.amazon.com/eks/latest/userguide/update-cluster.html#w665aac14c15b5c17) for our 1.20 to 1.21 upgrade we see that we’ll need to upgrade the kubeproxy and CoreDNS. In addition to performing these steps manually with kubectl as documented there you’ll find that eksctl can do it for you as well.
+
+Since we are using eksctl in the workshop we’ll run the two necessary commands for it to do these updates for us:
+```
+eksctl utils update-kube-proxy --cluster=eksworkshop-eksctl --approve
+```
+
+and then
+```
+eksctl utils update-coredns --cluster=eksworkshop-eksctl --approve
+```
+
+We can confirm we succeeded by retrieving the versions of each with the commands:
+```
+kubectl get daemonset kube-proxy --namespace kube-system -o=jsonpath='{$.spec.template.spec.containers[:1].image}'
+kubectl describe deployment coredns --namespace kube-system | grep Image | cut -d "/" -f 3
+```
+
+## Upgrade Managed Node Group
+Finally we have gotten to the last step of the upgrade process which is upgrading our Nodes.
+
+There are two ways to provision and manage your worker nodes - self-managed node groups and managed node groups. In this workshop eksctl was configured to use the managed node groups. This was helpful here as managed node groups make this easier for us by automating both the AWS and the Kubernetes side of the process.
+
+The way that managed node groups does this is:
+
+1. Amazon EKS creates a new Amazon EC2 launch template version for the Auto Scaling group associated with your node group. The new template uses the target AMI for the update.
+2. The Auto Scaling group is updated to use the latest launch template with the new AMI.
+3. The Auto Scaling group maximum size and desired size are incremented by one up to twice the number of Availability Zones in the Region that the Auto Scaling group is deployed in. This is to ensure that at least one new instance comes up in every Availability Zone in the Region that your node group is deployed in.
+4. Amazon EKS checks the nodes in the node group for the eks.amazonaws.com/nodegroup-image label, and applies a eks.amazonaws.com/nodegroup=unschedulable:NoSchedule taint on all of the nodes in the node group that aren’t labeled with the latest AMI ID. This prevents nodes that have already been updated from a previous failed update from being tainted.
+5. Amazon EKS randomly selects a node in the node group and evicts all pods from it.
+6. After all of the pods are evicted, Amazon EKS cordons the node. This is done so that the service controller doesn’t send any new request to this node and removes this node from its list of healthy, active nodes.
+7. Amazon EKS sends a termination request to the Auto Scaling group for the cordoned node.
+8. Steps 5-7 are repeated until there are no nodes in the node group that are deployed with the earlier version of the launch template.
+9. The Auto Scaling group maximum size and desired size are decremented by 1 to return to your pre-update values.
+
+If we instead had used a self-managed node group then we need to do the Kubernetes taint and draining steps ourselves to ensure Kubernetes knows that Node is going away and can manage that process gracefully in order for such an upgrade to be non-disruptive.
+
+The first step only applies to if we are using the cluster autoscaler. We don’t want conflicting Node scaling actions during our upgrade so we should scale that to zero to suspend it during this process using the command below. Unless you have done that module in the workshop and left it deployed you can skip this step.
+```
+kubectl scale deployments/cluster-autoscaler --replicas=0 -n kube-system
+```
+
+We can then trigger the MNG upgrade process by running the following eksctl command:
+```
+eksctl upgrade nodegroup --name=nodegroup --cluster=eksworkshop-eksctl --kubernetes-version=1.21
+```
+
+In another Terminal tab you can follow the progress with:
+```
+kubectl get nodes --watch
+```
+
+You’ll notice the new nodes come up (three one in each AZ), one of the older nodes go STATUS SchedulingDisabled, then eventually that node go away and another new node come up to replace it and so on as described in the process above until all the old Nodes have gone away. Then it’ll scale back down from 6 Nodes to the original 3.
+# Conclusion
+## What we've accomplished?
+We have:
+
+- Deployed an application consisting of microservices
+- Deployed the Kubernetes Dashboard
+- Deployed packages using Helm
+- Configured Automatic scaling of our pods and worker nodes
+
+# Final cleanup
+## Undeploy the applications
+To delete the resources created by the applications, we should delete the application deployments and kubernetes dashboard.
+
+Note that if you followed the cleanup section of the modules, some of the commands below might fail because there is nothing to delete and its ok.
+
+Undeploy the applications:
+```
+cd ~/environment/ecsdemo-frontend
+kubectl delete -f kubernetes/service.yaml
+kubectl delete -f kubernetes/deployment.yaml
+
+cd ~/environment/ecsdemo-crystal
+kubectl delete -f kubernetes/service.yaml
+kubectl delete -f kubernetes/deployment.yaml
+
+cd ~/environment/ecsdemo-nodejs
+kubectl delete -f kubernetes/service.yaml
+kubectl delete -f kubernetes/deployment.yaml
+
+export DASHBOARD_VERSION="v2.0.0"
+
+kubectl delete -f https://raw.githubusercontent.com/kubernetes/dashboard/${DASHBOARD_VERSION}/src/deploy/recommended/kubernetes-dashboard.yaml
+```
+
+## Delete the EKSCTL Cluster
+In order to delete the resources created for this EKS cluster, run the following commands:
+
+Delete the cluster:
+```
+eksctl delete cluster --name=eksworkshop-eksctl
+```
+
+Without the --wait flag, this will only issue a delete operation to the cluster’s CloudFormation stack and won’t wait for its deletion. The nodegroup will have to complete the deletion process before the EKS cluster can be deleted. The total process will take approximately 15 minutes, and can be monitored via the CloudFormation [Console](https://console.aws.amazon.com/cloudformation/home).
+
+
+## Cleanup the Workspace
+Since we no longer need the Cloud9 instance to have Administrator access to our account, we can delete the workspace we created:
+
+- Go to your [Cloud9 Environment](https://console.aws.amazon.com/cloud9/home)
+- Select the environment named `eksworkshop` and pick `delete`
+
+# Useful Resources
+- [EKS Anywhere](https://anywhere.eks.amazonaws.com/docs/getting-started/)
+- [Containers from the couch](https://containersfromthecouch.com/)
+
+## Tools for AWS Fargate and Amazon ECS
+- [Containers on AWS](https://containersonaws.com/) - Learn common best-practices for running containers on AWS
+- [fargate](http://somanymachines.com/fargate/) - Command line tool for interacting with AWS Fargate. With just a single command you can build, push, and launch your container in Fargate, orchestrated by ECS.
+- [Wonqa](https://www.npmjs.com/package/wonqa) is a tool for spinning up disposable QA environments in AWS Fargate, with SSL enabled by Let’s Encrypt. More details about Wonqa on the [Wonder Engineering blog](https://medium.com/wonder-engineering/on-demand-qa-environments-with-aws-fargate-c23b41f15a0c)
+- [coldbrew](https://github.com/coldbrewcloud/coldbrew-cli) - Fantastic tool that provisions ECS infrastructure, builds and deploys your container, and connects your services to an application load balancer automatically. Has a great developer experience for day to day use
+- [mu](https://github.com/stelligent/mu) - Automates everything relating to ECS devops and CI/CD. This framework lets you write a simple metadata file and it constructs all the infrastructure you need so that you can deploy to ECS by simply pushing to your Git repo.
+
+# What to learn next?
+- Spinnaker for Continuous Delivery
+- Amazon ECS
+- EKS Networking
+- Amazon App Mesh
