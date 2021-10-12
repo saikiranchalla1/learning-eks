@@ -3913,7 +3913,7 @@ Take some time to explore both YAML files and see the different between the two.
 ### Green Pod
 Now let’s deploy the green pod
 ```
-kubectl -n sg-per-pod apply -f ~/environment/sg-per-pod/green-pod.yaml
+kubectl -n sg-per-pod apply -f ~/environment/learning-eks/yamls/green-pod.yaml
 
 kubectl -n sg-per-pod rollout status deployment green-pod
 ```
@@ -3978,7 +3978,7 @@ Just like for the green pod, the container will try to:
 - Connect to the database and will output to STDOUT the content of a table.
 - If the database connection failed, the error message will also be outputted to STDOUT.
 ```
-kubectl -n sg-per-pod apply -f ~/environment/sg-per-pod/red-pod.yaml
+kubectl -n sg-per-pod apply -f ~/environment/learning-eks/yamls/red-pod.yaml
 
 kubectl -n sg-per-pod rollout status deployment red-pod
 ```
