@@ -4055,8 +4055,8 @@ aws rds delete-db-instance \
     --skip-final-snapshot
 
 # delete kubernetes element
-kubectl -n sg-per-pod delete -f ~/environment/sg-per-pod/green-pod.yaml
-kubectl -n sg-per-pod delete -f ~/environment/sg-per-pod/red-pod.yaml
+kubectl -n sg-per-pod delete -f ~/environment/learning-eks/yamls/green-pod.yaml
+kubectl -n sg-per-pod delete -f ~/environment/learning-eks/yamls/red-pod.yaml
 kubectl -n sg-per-pod delete -f ~/environment/sg-per-pod/sg-policy.yaml
 kubectl -n sg-per-pod delete secret rds
 
